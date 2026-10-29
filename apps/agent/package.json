@@ -1,0 +1,20 @@
+{
+  "name": "@ledger/agent",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/main.ts",
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@langchain/core": "^1.1.0",
+    "@langchain/openai": "^1.1.0",
+    "langchain": "^1.1.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.19.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

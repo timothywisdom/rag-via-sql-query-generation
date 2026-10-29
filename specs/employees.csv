@@ -1,0 +1,201 @@
+employee_id,first_name,last_name,role,department,office_location,salary_2023,salary_2024,salary_2025,hire_date,tax_status,expenses_2023,expenses_2024,expenses_2025,access_level
+E001,Bob,Langley,Senior Accountant,Finance,Chicago,72928.28,75845.41,78500.0,2019-03-15,W-2,1250.00,1480.00,890.00,staff
+E002,Terry,Jeffords,HR Manager,Human Resources,Brooklyn,85470.09,88888.89,92000.0,2017-06-01,W-2,3200.00,2890.00,1560.00,manager
+E003,Horatio,Kane,Chief Executive Officer,Executive,Manhattan,450575.99,468599.03,485000.0,2010-01-10,W-2,45000.00,52000.00,38000.00,executive
+E004,Nancy,Nunchuk,VP of Operations,Operations,Seattle,227610.56,236714.98,245000.0,2012-08-22,W-2,28500.00,31200.00,22400.00,executive
+E005,Alice,Montgomery,Payroll Specialist,Finance,Brooklyn,57599.4,59903.38,62000.0,2021-02-14,W-2,450.00,620.00,380.00,staff
+E006,Marcus,Chen,Software Engineer,Technology,San Francisco,134708.29,140096.62,145000.0,2020-09-01,W-2,2100.00,1850.00,2200.00,staff
+E007,Priya,Sharma,Data Analyst,Technology,Austin,91044.22,94685.99,98000.0,2022-01-10,W-2,780.00,920.00,650.00,staff
+E008,James,O'Brien,Sales Director,Sales,Boston,125418.06,130434.78,135000.0,2016-04-18,W-2,8900.00,9200.00,7800.00,manager
+E009,Sofia,Rodriguez,Marketing Manager,Marketing,Miami,81753.99,85024.15,88000.0,2019-11-05,W-2,4500.00,5200.00,3900.00,manager
+E010,David,Kim,Compliance Officer,Legal,Manhattan,106837.61,111111.11,115000.0,2018-07-22,W-2,1200.00,1450.00,980.00,staff
+E011,Emma,Wilson,Junior Accountant,Finance,Chicago,48309.18,50241.55,52000.0,2023-03-01,W-2,320.00,480.00,290.00,staff
+E012,Michael,Brown,Senior Developer,Technology,Seattle,143998.51,149758.45,155000.0,2017-10-15,W-2,1800.00,2100.00,1650.00,staff
+E013,Olivia,Taylor,HR Coordinator,Human Resources,Denver,53883.32,56038.65,58000.0,2022-06-20,W-2,650.00,720.00,540.00,staff
+E014,William,Anderson,Regional Sales Manager,Sales,Dallas,116127.84,120772.95,125000.0,2015-02-28,W-2,12500.00,11800.00,9500.00,manager
+E015,Ava,Martinez,UX Designer,Technology,Portland,88257.15,91787.44,95000.0,2021-08-12,W-2,1100.00,1350.00,980.00,staff
+E016,Benjamin,Lee,Chief Financial Officer,Executive,Manhattan,366963.95,381642.51,395000.0,2011-05-01,W-2,38000.00,42000.00,35000.00,executive
+E017,Charlotte,Garcia,Tax Specialist,Finance,Phoenix,66889.63,69565.22,72000.0,2020-04-06,W-2,890.00,1020.00,760.00,staff
+E018,Daniel,Wright,IT Support Specialist,Technology,Atlanta,60386.47,62801.93,65000.0,2022-09-15,W-2,420.00,580.00,390.00,staff
+E019,Mia,Thompson,Legal Counsel,Legal,Manhattan,153288.74,159420.29,165000.0,2016-11-30,W-2,2800.00,3100.00,2450.00,manager
+E020,Ethan,White,Warehouse Manager,Operations,Detroit,63173.54,65700.48,68000.0,2018-01-22,W-2,1500.00,1680.00,1320.00,manager
+E021,Isabella,Harris,Benefits Administrator,Human Resources,Minneapolis,56670.38,58937.2,61000.0,2021-05-10,W-2,480.00,620.00,410.00,staff
+E022,Alexander,Clark,Product Manager,Technology,San Francisco,130063.17,135265.7,140000.0,2019-07-08,W-2,3200.00,3800.00,2900.00,manager
+E023,Sophia,Lewis,Accounts Payable Clerk,Finance,Brooklyn,44593.09,46376.81,48000.0,2023-01-16,W-2,280.00,420.00,310.00,staff
+E024,Matthew,Walker,Security Analyst,Technology,Washington DC,97547.38,101449.28,105000.0,2020-03-25,W-2,1450.00,1680.00,1220.00,staff
+E025,Amelia,Hall,Customer Success Manager,Sales,Toronto,78966.92,82125.6,85000.0,2021-10-04,W-2,2800.00,3100.00,2450.00,staff
+E026,Joseph,Allen,Logistics Coordinator,Operations,Houston,52025.27,54106.28,56000.0,2022-02-28,W-2,890.00,1020.00,780.00,staff
+E027,Harper,Young,Content Writer,Marketing,Austin,57599.4,59903.38,62000.0,2022-08-15,W-2,520.00,680.00,490.00,staff
+E028,Christopher,King,VP of Engineering,Technology,San Francisco,264771.46,275362.32,285000.0,2013-06-10,W-2,22000.00,25000.00,19500.00,executive
+E029,Evelyn,Scott,Recruiting Specialist,Human Resources,Chicago,59457.45,61835.75,64000.0,2021-04-19,W-2,1800.00,2100.00,1550.00,staff
+E030,Andrew,Green,Financial Analyst,Finance,Manhattan,76179.86,79227.05,82000.0,2020-11-02,W-2,680.00,820.00,590.00,staff
+E031,Abigail,Adams,Office Manager,Operations,Philadelphia,51096.25,53140.1,55000.0,2019-09-14,W-2,1200.00,1450.00,1080.00,staff
+E032,Joshua,Baker,DevOps Engineer,Technology,Seattle,125418.06,130434.78,135000.0,2020-06-22,W-2,1650.00,1890.00,1420.00,staff
+E033,Emily,Nelson,Payroll Manager,Finance,Brooklyn,72463.77,75362.32,78000.0,2017-03-08,W-2,920.00,1100.00,840.00,manager
+E034,Ryan,Carter,Sales Representative,Sales,Phoenix,66889.63,69565.22,72000.0,2022-04-11,W-2,4200.00,4800.00,3650.00,staff
+E035,Elizabeth,Mitchell,Chief Operating Officer,Executive,Manhattan,339093.27,352657.0,365000.0,2012-02-15,W-2,35000.00,38000.00,32000.00,executive
+E036,Nathan,Perez,QA Engineer,Technology,Austin,81753.99,85024.15,88000.0,2021-07-26,W-2,780.00,920.00,680.00,staff
+E037,Victoria,Roberts,Brand Manager,Marketing,Los Angeles,88257.15,91787.44,95000.0,2019-12-09,W-2,5800.00,6200.00,4900.00,manager
+E038,Samuel,Turner,Accounts Receivable Specialist,Finance,Denver,50167.22,52173.91,54000.0,2022-10-17,W-2,420.00,580.00,390.00,staff
+E039,Grace,Phillips,Training Coordinator,Human Resources,Atlanta,54812.34,57004.83,59000.0,2021-01-25,W-2,1100.00,1350.00,980.00,staff
+E040,Christian,Campbell,Network Administrator,Technology,Dallas,85470.09,88888.89,92000.0,2018-08-06,W-2,1280.00,1520.00,1120.00,staff
+E041,Chloe,Parker,Executive Assistant,Executive,Manhattan,66889.63,69565.22,72000.0,2020-05-18,W-2,2800.00,3200.00,2450.00,staff
+E042,Jonathan,Evans,Procurement Specialist,Operations,Minneapolis,62244.52,64734.3,67000.0,2019-02-11,W-2,1450.00,1680.00,1280.00,staff
+E043,Natalie,Edwards,Social Media Manager,Marketing,Miami,63173.54,65700.48,68000.0,2022-03-28,W-2,1200.00,1450.00,1080.00,staff
+E044,Kevin,Collins,Senior Accountant,Finance,Toronto,70605.72,73429.95,76000.0,2018-10-22,W-2,980.00,1150.00,860.00,staff
+E045,Hannah,Stewart,Legal Assistant,Legal,Boston,53883.32,56038.65,58000.0,2021-06-14,W-2,680.00,820.00,590.00,staff
+E046,Brandon,Sanchez,Inventory Manager,Operations,Houston,59457.45,61835.75,64000.0,2020-01-07,W-2,1350.00,1580.00,1180.00,manager
+E047,Samantha,Morris,Business Analyst,Technology,Washington DC,91044.22,94685.99,98000.0,2019-04-29,W-2,1100.00,1320.00,980.00,staff
+E048,Tyler,Rogers,Field Sales Representative,Sales,Calgary,72463.77,75362.32,78000.0,2021-09-06,W-2,6500.00,7200.00,5800.00,staff
+E049,Ashley,Reed,Graphic Designer,Marketing,Portland,66889.63,69565.22,72000.0,2022-05-23,W-2,890.00,1080.00,780.00,staff
+E050,Aaron,Cook,Database Administrator,Technology,Chicago,100334.45,104347.83,108000.0,2017-12-04,W-2,1200.00,1450.00,1080.00,staff
+E051,Kayla,Morgan,Compensation Analyst,Human Resources,San Francisco,78966.92,82125.6,85000.0,2020-08-17,W-2,720.00,890.00,650.00,staff
+E052,Justin,Bell,Regional Manager,Operations,Vancouver,97547.38,101449.28,105000.0,2016-03-21,W-2,4800.00,5200.00,4100.00,manager
+E053,Lauren,Murphy,Tax Manager,Finance,Manhattan,104050.54,108212.56,112000.0,2015-09-28,W-2,1450.00,1680.00,1280.00,manager
+E054,Brandon,Bailey,Solutions Architect,Technology,Seattle,146785.58,152657.0,158000.0,2018-04-16,W-2,2200.00,2580.00,1950.00,staff
+E055,Rachel,Rivera,PR Specialist,Marketing,Los Angeles,69676.7,72463.77,75000.0,2021-11-08,W-2,3200.00,3650.00,2800.00,staff
+E056,Dylan,Cooper,Shipping Coordinator,Operations,Detroit,48309.18,50241.55,52000.0,2022-07-11,W-2,680.00,820.00,590.00,staff
+E057,Megan,Richardson,Employee Relations Specialist,Human Resources,Philadelphia,63173.54,65700.48,68000.0,2020-02-24,W-2,920.00,1100.00,840.00,staff
+E058,Kyle,Cox,Frontend Developer,Technology,Austin,106837.61,111111.11,115000.0,2021-03-15,W-2,1350.00,1580.00,1180.00,staff
+E059,Rebecca,Howard,VP of Sales,Sales,Manhattan,246191.01,256038.65,265000.0,2014-07-09,W-2,28000.00,32000.00,25000.00,executive
+E060,Jason,Ward,Facilities Manager,Operations,Atlanta,57599.4,59903.38,62000.0,2019-10-28,W-2,1800.00,2100.00,1580.00,manager
+E061,Nicole,Torres,Internal Auditor,Finance,Chicago,81753.99,85024.15,88000.0,2018-05-14,W-2,1100.00,1320.00,980.00,staff
+E062,Eric,Peterson,Cloud Engineer,Technology,San Francisco,141211.44,146859.9,152000.0,2020-12-07,W-2,1680.00,1920.00,1450.00,staff
+E063,Stephanie,Gray,Event Coordinator,Marketing,Miami,53883.32,56038.65,58000.0,2022-01-31,W-2,4500.00,5200.00,3900.00,staff
+E064,Adam,Ramirez,Supply Chain Analyst,Operations,Dallas,66889.63,69565.22,72000.0,2021-04-26,W-2,1200.00,1450.00,1080.00,staff
+E065,Michelle,James,Benefits Manager,Human Resources,Denver,76179.86,79227.05,82000.0,2017-08-19,W-2,1450.00,1680.00,1280.00,manager
+E066,Patrick,Watson,Backend Developer,Technology,Portland,116127.84,120772.95,125000.0,2019-06-03,W-2,1520.00,1780.00,1350.00,staff
+E067,Amanda,Brooks,Credit Analyst,Finance,Toronto,72463.77,75362.32,78000.0,2020-09-21,W-2,680.00,820.00,590.00,staff
+E068,Steven,Kelly,Sales Engineer,Sales,Boston,109624.67,114009.66,118000.0,2018-11-12,W-2,5800.00,6500.00,5100.00,staff
+E069,Jennifer,Sanders,VP of Marketing,Marketing,Manhattan,227610.56,236714.98,245000.0,2013-01-28,W-2,22000.00,25000.00,19500.00,executive
+E070,Brian,Price,Maintenance Supervisor,Operations,Houston,53883.32,56038.65,58000.0,2019-07-15,W-2,1650.00,1920.00,1450.00,manager
+E071,Kimberly,Bennett,HRIS Analyst,Human Resources,Minneapolis,68747.67,71497.58,74000.0,2021-02-08,W-2,580.00,720.00,520.00,staff
+E072,Timothy,Wood,Security Engineer,Technology,Washington DC,128205.12,133333.33,138000.0,2020-04-13,W-2,1800.00,2100.00,1580.00,staff
+E073,Sarah,Barnes,Controller,Finance,Manhattan,153288.74,159420.29,165000.0,2014-10-06,W-2,2800.00,3200.00,2500.00,manager
+E074,Jeremy,Ross,Account Executive,Sales,Phoenix,78966.92,82125.6,85000.0,2022-06-27,W-2,4200.00,4800.00,3650.00,staff
+E075,Heather,Henderson,Digital Marketing Specialist,Marketing,Austin,63173.54,65700.48,68000.0,2021-08-30,W-2,1100.00,1350.00,980.00,staff
+E076,Gregory,Coleman,Warehouse Supervisor,Operations,Detroit,50167.22,52173.91,54000.0,2020-03-16,W-2,980.00,1150.00,860.00,manager
+E077,Amy,Jenkins,Talent Acquisition Manager,Human Resources,San Francisco,88257.15,91787.44,95000.0,2018-06-25,W-2,2800.00,3200.00,2450.00,manager
+E078,Scott,Perry,Full Stack Developer,Technology,Seattle,131921.22,137198.07,142000.0,2019-01-14,W-2,1680.00,1920.00,1450.00,staff
+E079,Danielle,Powell,Billing Specialist,Finance,Brooklyn,52025.27,54106.28,56000.0,2022-04-04,W-2,420.00,580.00,390.00,staff
+E080,Jeffrey,Long,Territory Manager,Sales,Calgary,85470.09,88888.89,92000.0,2017-11-27,W-2,7200.00,8100.00,6500.00,manager
+E081,Christine,Patterson,Paralegal,Legal,Boston,60386.47,62801.93,65000.0,2021-05-17,W-2,520.00,680.00,490.00,staff
+E082,Mark,Hughes,Operations Analyst,Operations,Philadelphia,66889.63,69565.22,72000.0,2020-08-10,W-2,980.00,1150.00,860.00,staff
+E083,Angela,Flores,Diversity and Inclusion Specialist,Human Resources,Los Angeles,72463.77,75362.32,78000.0,2022-02-21,W-2,1200.00,1450.00,1080.00,staff
+E084,Paul,Washington,Data Engineer,Technology,Chicago,125418.06,130434.78,135000.0,2019-09-09,W-2,1450.00,1680.00,1280.00,staff
+E085,Maria,Butler,Treasury Analyst,Finance,Manhattan,88257.15,91787.44,95000.0,2018-12-03,W-2,780.00,920.00,680.00,staff
+E086,Frank,Simmons,VP of Human Resources,Human Resources,Manhattan,209030.1,217391.3,225000.0,2012-04-23,W-2,18000.00,21000.00,16500.00,executive
+E087,Dorothy,Foster,Media Buyer,Marketing,Miami,66889.63,69565.22,72000.0,2021-10-11,W-2,2800.00,3200.00,2450.00,staff
+E088,Raymond,Gonzales,Quality Control Inspector,Operations,Houston,53883.32,56038.65,58000.0,2020-06-29,W-2,680.00,820.00,590.00,staff
+E089,Janet,Bryant,Workforce Planning Analyst,Human Resources,Denver,70605.72,73429.95,76000.0,2022-09-05,W-2,620.00,780.00,560.00,staff
+E090,Dennis,Alexander,Site Reliability Engineer,Technology,San Francisco,153288.74,159420.29,165000.0,2018-02-19,W-2,1920.00,2200.00,1680.00,staff
+E091,Catherine,Russell,Senior Financial Analyst,Finance,Toronto,91044.22,94685.99,98000.0,2017-07-31,W-2,1100.00,1320.00,980.00,staff
+E092,Jerry,Griffin,Inside Sales Representative,Sales,Dallas,60386.47,62801.93,65000.0,2022-11-14,W-2,3200.00,3650.00,2800.00,staff
+E093,Carol,Diaz,Creative Director,Marketing,Los Angeles,134708.29,140096.62,145000.0,2015-05-04,W-2,6500.00,7200.00,5800.00,manager
+E094,Jack,Hayes,Distribution Manager,Operations,Atlanta,72463.77,75362.32,78000.0,2019-03-25,W-2,2100.00,2450.00,1850.00,manager
+E095,Diana,Myers,Learning and Development Specialist,Human Resources,Portland,66889.63,69565.22,72000.0,2021-06-07,W-2,1800.00,2100.00,1580.00,staff
+E096,Henry,Ford,Mobile Developer,Technology,Austin,118914.9,123671.5,128000.0,2020-10-19,W-2,1520.00,1780.00,1350.00,staff
+E097,Judith,Hamilton,Accounts Payable Manager,Finance,Chicago,78966.92,82125.6,85000.0,2016-08-08,W-2,720.00,890.00,650.00,manager
+E098,Russell,Graham,Business Development Manager,Sales,Vancouver,106837.61,111111.11,115000.0,2018-01-29,W-2,8500.00,9200.00,7500.00,manager
+E099,Rose,Sullivan,Compliance Analyst,Legal,Washington DC,81753.99,85024.15,88000.0,2021-12-13,W-2,980.00,1150.00,860.00,staff
+E100,Philip,Wallace,Fleet Manager,Operations,Minneapolis,63173.54,65700.48,68000.0,2020-07-06,W-2,2450.00,2800.00,2150.00,manager
+E101,Frances,West,Payroll Coordinator,Human Resources,Brooklyn,50167.22,52173.91,54000.0,2022-08-22,W-2,380.00,520.00,350.00,staff
+E102,Louis,Cole,Principal Engineer,Technology,Seattle,171869.19,178743.96,185000.0,2014-11-17,W-2,2800.00,3200.00,2500.00,staff
+E103,Marie,Woods,Budget Analyst,Finance,Manhattan,76179.86,79227.05,82000.0,2019-05-27,W-2,680.00,820.00,590.00,staff
+E104,Carl,Burns,Channel Sales Manager,Sales,Boston,116127.84,120772.95,125000.0,2017-02-13,W-2,9500.00,10500.00,8500.00,manager
+E105,Joyce,Crawford,Communications Manager,Marketing,Phoenix,81753.99,85024.15,88000.0,2020-04-20,W-2,3650.00,4200.00,3100.00,manager
+E106,Albert,Olson,Plant Manager,Operations,Detroit,88257.15,91787.44,95000.0,2015-12-07,W-2,3200.00,3650.00,2800.00,manager
+E107,Virginia,Torres,Employee Engagement Specialist,Human Resources,Atlanta,60386.47,62801.93,65000.0,2022-03-14,W-2,980.00,1150.00,860.00,staff
+E108,Roy,Webb,AI/ML Engineer,Technology,San Francisco,162578.97,169082.13,175000.0,2021-01-04,W-2,2100.00,2450.00,1850.00,staff
+E109,Martha,Newman,Risk Analyst,Finance,Toronto,85470.09,88888.89,92000.0,2018-09-10,W-2,1200.00,1450.00,1080.00,staff
+E110,Eugene,Tucker,National Sales Director,Sales,Manhattan,171869.19,178743.96,185000.0,2013-08-26,W-2,18000.00,21000.00,16500.00,manager
+E111,Ann,Stone,VP of Legal,Legal,Manhattan,255481.23,265700.48,275000.0,2011-11-21,W-2,25000.00,28000.00,22000.00,executive
+E112,Vincent,Porter,Receiving Clerk,Operations,Houston,41806.02,43478.26,45000.0,2023-02-06,W-2,280.00,420.00,310.00,staff
+E113,Theresa,Hicks,Onboarding Specialist,Human Resources,Denver,53883.32,56038.65,58000.0,2021-09-20,W-2,1450.00,1680.00,1280.00,staff
+E114,Roger,Henderson,Platform Engineer,Technology,Portland,134708.29,140096.62,145000.0,2019-12-02,W-2,1680.00,1920.00,1450.00,staff
+E115,Doris,Elliott,Staff Accountant,Finance,Philadelphia,57599.4,59903.38,62000.0,2022-05-09,W-2,480.00,620.00,450.00,staff
+E116,Willie,Cunningham,Sales Operations Manager,Sales,Dallas,97547.38,101449.28,105000.0,2018-04-23,W-2,4500.00,5200.00,3900.00,manager
+E117,Jean,Harper,SEO Specialist,Marketing,Austin,66889.63,69565.22,72000.0,2021-07-12,W-2,890.00,1080.00,780.00,staff
+E118,Howard,Kim,Logistics Manager,Operations,Calgary,78966.92,82125.6,85000.0,2016-10-31,W-2,3200.00,3650.00,2800.00,manager
+E119,Lillian,Day,Compensation Manager,Human Resources,Minneapolis,85470.09,88888.89,92000.0,2017-06-19,W-2,1100.00,1320.00,980.00,manager
+E120,Arthur,Moreno,Technical Lead,Technology,Chicago,150501.67,156521.74,162000.0,2015-01-26,W-2,2200.00,2580.00,1950.00,manager
+E121,Teresa,Jenkins,Cost Accountant,Finance,Brooklyn,66889.63,69565.22,72000.0,2020-11-09,W-2,620.00,780.00,560.00,staff
+E122,Bruce,Gutierrez,Enterprise Account Executive,Sales,San Francisco,134708.29,140096.62,145000.0,2019-02-18,W-2,12000.00,13500.00,10500.00,staff
+E123,Kathryn,Reyes,Content Marketing Manager,Marketing,Los Angeles,88257.15,91787.44,95000.0,2020-06-15,W-2,4200.00,4800.00,3650.00,manager
+E124,Lawrence,Stevens,Safety Manager,Operations,Atlanta,72463.77,75362.32,78000.0,2018-08-27,W-2,1800.00,2100.00,1580.00,manager
+E125,Janice,Freeman,HR Business Partner,Human Resources,Seattle,91044.22,94685.99,98000.0,2017-04-10,W-2,2100.00,2450.00,1850.00,staff
+E126,Benjamin,Mills,Cybersecurity Analyst,Technology,Washington DC,116127.84,120772.95,125000.0,2021-03-29,W-2,1680.00,1920.00,1450.00,staff
+E127,Beverly,George,Audit Manager,Finance,Manhattan,125418.06,130434.78,135000.0,2014-09-15,W-2,2450.00,2800.00,2150.00,manager
+E128,Gerald,Fisher,District Sales Manager,Sales,Miami,106837.61,111111.11,115000.0,2016-12-05,W-2,9200.00,10200.00,8200.00,manager
+E129,Carolyn,Cruz,Brand Strategist,Marketing,Portland,78966.92,82125.6,85000.0,2022-01-24,W-2,2800.00,3200.00,2450.00,staff
+E130,Randy,Hernandez,Production Supervisor,Operations,Detroit,60386.47,62801.93,65000.0,2019-08-12,W-2,1450.00,1680.00,1280.00,manager
+E131,Annie,Henry,Organizational Development Specialist,Human Resources,Boston,76179.86,79227.05,82000.0,2020-12-21,W-2,1650.00,1920.00,1450.00,staff
+E132,Johnny,Schmidt,Infrastructure Engineer,Technology,Denver,128205.12,133333.33,138000.0,2018-03-05,W-2,1800.00,2100.00,1580.00,staff
+E133,Gloria,Murray,Tax Analyst,Finance,Toronto,72463.77,75362.32,78000.0,2021-10-25,W-2,680.00,820.00,590.00,staff
+E134,Sean,Arnold,Partnership Manager,Sales,Vancouver,97547.38,101449.28,105000.0,2019-05-13,W-2,6500.00,7200.00,5800.00,manager
+E135,Ruth,Webb,Public Relations Manager,Marketing,Phoenix,81753.99,85024.15,88000.0,2017-09-04,W-2,5200.00,5800.00,4500.00,manager
+E136,Martin,Weaver,Inventory Analyst,Operations,Houston,57599.4,59903.38,62000.0,2022-04-18,W-2,780.00,920.00,680.00,staff
+E137,Shirley,Mcdonald,Recruitment Coordinator,Human Resources,Philadelphia,48309.18,50241.55,52000.0,2023-01-09,W-2,1100.00,1320.00,980.00,staff
+E138,Terry,Burke,Engineering Manager,Technology,San Francisco,181159.42,188405.8,195000.0,2015-06-22,W-2,3650.00,4200.00,3200.00,manager
+E139,Julia,Gibson,Revenue Analyst,Finance,Chicago,78966.92,82125.6,85000.0,2020-02-10,W-2,720.00,890.00,650.00,staff
+E140,Harry,Ellis,Strategic Account Manager,Sales,Manhattan,125418.06,130434.78,135000.0,2017-11-20,W-2,10500.00,11800.00,9500.00,manager
+E141,Judy,Sanders,Product Marketing Manager,Marketing,Austin,97547.38,101449.28,105000.0,2019-07-29,W-2,4800.00,5500.00,4200.00,manager
+E142,Craig,Bishop,Lean Manager,Operations,Calgary,81753.99,85024.15,88000.0,2018-10-08,W-2,2100.00,2450.00,1850.00,manager
+E143,Marilyn,Garcia,Labor Relations Specialist,Human Resources,Los Angeles,72463.77,75362.32,78000.0,2021-04-05,W-2,1200.00,1450.00,1080.00,staff
+E144,Keith,Morales,Software Architect,Technology,Seattle,165366.04,171980.68,178000.0,2016-01-18,W-2,2580.00,2950.00,2250.00,staff
+E145,Lori,Parker,Financial Planning Analyst,Finance,Manhattan,88257.15,91787.44,95000.0,2019-11-11,W-2,980.00,1150.00,860.00,staff
+E146,Todd,Floyd,Customer Account Manager,Sales,Dallas,85470.09,88888.89,92000.0,2020-08-03,W-2,5800.00,6500.00,5100.00,staff
+E147,Bonnie,Warren,Influencer Marketing Specialist,Marketing,Miami,66889.63,69565.22,72000.0,2022-06-13,W-2,3200.00,3650.00,2800.00,staff
+E148,Wayne,Fox,Environmental Health and Safety Specialist,Operations,Atlanta,69676.7,72463.77,75000.0,2021-01-18,W-2,1350.00,1580.00,1180.00,staff
+E149,Brenda,Rose,Total Rewards Analyst,Human Resources,Denver,72463.77,75362.32,78000.0,2020-05-25,W-2,720.00,890.00,650.00,staff
+E150,Eugene,Ryan,Release Manager,Technology,Portland,109624.67,114009.66,118000.0,2018-12-10,W-2,1450.00,1680.00,1280.00,manager
+E151,Norma,Bryant,Payroll Analyst,Finance,Brooklyn,60386.47,62801.93,65000.0,2021-08-16,W-2,520.00,680.00,490.00,staff
+E152,Carlos,Stephens,Pre-Sales Consultant,Sales,Boston,100334.45,104347.83,108000.0,2019-03-04,W-2,6200.00,7000.00,5600.00,staff
+E153,Pamela,Romero,Advertising Manager,Marketing,Los Angeles,106837.61,111111.11,115000.0,2017-05-29,W-2,8500.00,9500.00,7800.00,manager
+E154,Ralph,Jacobs,Dock Supervisor,Operations,Minneapolis,52025.27,54106.28,56000.0,2020-10-12,W-2,980.00,1150.00,860.00,manager
+E155,Christine,Keller,People Operations Specialist,Human Resources,San Francisco,78966.92,82125.6,85000.0,2022-02-07,W-2,1100.00,1320.00,980.00,staff
+E156,Nicholas,Palmer,Data Science Lead,Technology,Chicago,162578.97,169082.13,175000.0,2017-08-14,W-2,2450.00,2800.00,2150.00,manager
+E157,Wanda,Meyer,Cash Management Analyst,Finance,Toronto,72463.77,75362.32,78000.0,2019-06-24,W-2,620.00,780.00,560.00,staff
+E158,Peter,Schmidt,Regional Account Director,Sales,Vancouver,134708.29,140096.62,145000.0,2015-11-09,W-2,12500.00,14000.00,11000.00,manager
+E159,Sandra,Flores,Employer Branding Specialist,Marketing,Phoenix,69676.7,72463.77,75000.0,2021-12-06,W-2,2100.00,2450.00,1850.00,staff
+E160,Fred,Watson,Continuous Improvement Manager,Operations,Houston,88257.15,91787.44,95000.0,2016-04-25,W-2,2800.00,3200.00,2450.00,manager
+E161,Anna,Long,Chief Human Resources Officer,Executive,Manhattan,320512.82,333333.33,345000.0,2010-07-12,W-2,32000.00,36000.00,28000.00,executive
+E162,Walter,Howell,VP of Technology,Executive,San Francisco,301932.37,314009.66,325000.0,2012-09-03,W-2,28000.00,32000.00,25000.00,executive
+E163,Irene,Lawrence,Chief Marketing Officer,Executive,Manhattan,292642.14,304347.83,315000.0,2011-03-21,W-2,30000.00,34000.00,26500.00,executive
+E164,Harold,Austin,Corporate Controller,Finance,Manhattan,181159.42,188405.8,195000.0,2013-10-14,W-2,4500.00,5200.00,3900.00,manager
+E165,Debra,Owens,Senior Legal Counsel,Legal,Boston,171869.19,178743.96,185000.0,2015-02-09,W-2,3200.00,3650.00,2800.00,manager
+E166,Carl,Stone,Principal Product Manager,Technology,Seattle,156075.81,162318.84,168000.0,2016-06-27,W-2,3650.00,4200.00,3200.00,manager
+E167,Donna,Dixon,Director of Talent Management,Human Resources,Chicago,134708.29,140096.62,145000.0,2014-12-01,W-2,4200.00,4800.00,3650.00,manager
+E168,Jesse,Hunt,Senior Sales Engineer,Sales,Dallas,122630.99,127536.23,132000.0,2017-03-13,W-2,7800.00,8600.00,7000.00,staff
+E169,Tina,Jenkins,Director of Communications,Marketing,Los Angeles,128205.12,133333.33,138000.0,2016-09-19,W-2,6800.00,7500.00,6000.00,manager
+E170,Donald,Robertson,Director of Operations,Operations,Detroit,143998.51,149758.45,155000.0,2014-05-05,W-2,5500.00,6200.00,4800.00,manager
+E171,Helen,Hill,AP/AR Manager,Finance,Philadelphia,85470.09,88888.89,92000.0,2018-07-30,W-2,1200.00,1450.00,1080.00,manager
+E172,Russell,Graham,Technical Program Manager,Technology,Washington DC,143998.51,149758.45,155000.0,2019-01-21,W-2,2800.00,3200.00,2450.00,manager
+E173,Katherine,Nelson,Director of HR Operations,Human Resources,Denver,125418.06,130434.78,135000.0,2015-08-17,W-2,3200.00,3650.00,2800.00,manager
+E174,Douglas,Adams,Chief Technology Officer,Executive,San Francisco,394834.63,410628.02,425000.0,2009-11-30,W-2,48000.00,55000.00,42000.00,executive
+E175,Janice,Wheeler,Senior Tax Manager,Finance,Manhattan,134708.29,140096.62,145000.0,2016-02-22,W-2,2100.00,2450.00,1850.00,manager
+E176,Betty,Powell,Director of Customer Success,Sales,Toronto,118914.9,123671.5,128000.0,2017-10-02,W-2,4800.00,5500.00,4200.00,manager
+E177,Gerald,Cooper,Creative Operations Manager,Marketing,Miami,88257.15,91787.44,95000.0,2019-04-08,W-2,3650.00,4200.00,3200.00,manager
+E178,Joan,Russell,Senior Operations Analyst,Operations,Calgary,76179.86,79227.05,82000.0,2020-01-13,W-2,1450.00,1680.00,1280.00,staff
+E179,Joe,Lee,Director of Information Security,Technology,Chicago,162578.97,169082.13,175000.0,2015-07-06,W-2,3200.00,3650.00,2800.00,manager
+E180,Alice,Harris,Treasury Manager,Finance,Manhattan,116127.84,120772.95,125000.0,2017-04-24,W-2,1800.00,2100.00,1580.00,manager
+E181,Roy,Martinez,Regional VP of Sales,Sales,Boston,181159.42,188405.8,195000.0,2014-01-06,W-2,15000.00,17000.00,13500.00,manager
+E182,Phyllis,Robinson,Director of Brand Marketing,Marketing,Los Angeles,137495.36,142995.17,148000.0,2016-08-15,W-2,7500.00,8500.00,6800.00,manager
+E183,Billy,Clark,Facilities Director,Operations,Atlanta,106837.61,111111.11,115000.0,2015-03-30,W-2,4200.00,4800.00,3650.00,manager
+E184,Judy,Lewis,Director of Total Rewards,Human Resources,San Francisco,143998.51,149758.45,155000.0,2016-11-07,W-2,3650.00,4200.00,3200.00,manager
+E185,Randy,Walker,Principal Architect,Technology,Seattle,178372.36,185507.25,192000.0,2014-08-18,W-2,3200.00,3650.00,2800.00,staff
+E186,Theresa,Hall,Director of FP&A,Finance,Manhattan,153288.74,159420.29,165000.0,2015-05-11,W-2,2800.00,3200.00,2450.00,manager
+E187,Johnny,Allen,VP of Business Development,Sales,Manhattan,218320.33,227053.14,235000.0,2013-02-25,W-2,22000.00,25000.00,19500.00,executive
+E188,Sara,Young,Director of Product Marketing,Marketing,Austin,131921.22,137198.07,142000.0,2017-07-17,W-2,5500.00,6200.00,4800.00,manager
+E189,Matthew,King,Senior Director of Engineering,Technology,San Francisco,199739.88,207729.47,215000.0,2014-04-07,W-2,5200.00,5800.00,4500.00,manager
+E190,Lois,Wright,Chief Accounting Officer,Executive,Manhattan,274061.68,285024.15,295000.0,2011-06-13,W-2,26000.00,29000.00,23000.00,executive
+E191,Gerald,Scott,Director of Supply Chain,Operations,Houston,134708.29,140096.62,145000.0,2015-10-26,W-2,4500.00,5200.00,3900.00,manager
+E192,Anne,Green,Senior Director of HR,Human Resources,Chicago,153288.74,159420.29,165000.0,2014-02-03,W-2,4200.00,4800.00,3650.00,manager
+E193,Jack,Baker,Staff Software Engineer,Technology,Portland,156075.81,162318.84,168000.0,2016-05-16,W-2,2450.00,2800.00,2150.00,staff
+E194,Frances,Adams,Director of Investor Relations,Finance,Manhattan,162578.97,169082.13,175000.0,2015-09-08,W-2,6500.00,7200.00,5800.00,manager
+E195,Earl,Nelson,VP of Customer Experience,Sales,Toronto,190449.64,198067.63,205000.0,2013-11-18,W-2,12000.00,13500.00,10500.00,executive
+E196,Marie,Carter,Senior Director of Marketing,Marketing,Miami,146785.58,152657.0,158000.0,2015-04-13,W-2,6200.00,7000.00,5600.00,manager
+E197,Leonard,Mitchell,Director of Manufacturing,Operations,Detroit,128205.12,133333.33,138000.0,2016-01-04,W-2,4800.00,5500.00,4200.00,manager
+E198,Irene,Perez,Senior Manager of Talent Acquisition,Human Resources,Denver,109624.67,114009.66,118000.0,2017-06-05,W-2,3200.00,3650.00,2800.00,manager
+E199,Francis,Roberts,Distinguished Engineer,Technology,San Francisco,209030.1,217391.3,225000.0,2012-12-10,W-2,4200.00,4800.00,3650.00,staff
+E200,Clara,Turner,Chief Compliance Officer,Legal,Manhattan,264771.46,275362.32,285000.0,2011-08-29,W-2,22000.00,25000.00,19500.00,executive

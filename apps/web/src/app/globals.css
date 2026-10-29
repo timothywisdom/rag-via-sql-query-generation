@@ -1,0 +1,199 @@
+:root {
+  color-scheme: light;
+  --paper: #f3ecdf;
+  --ink: #1b2430;
+  --muted: #5c6570;
+  --line: #d9cbb6;
+  --card: #fffaf3;
+  --green: #0d6a4f;
+  --green-ink: #083d2e;
+  --refused: #8a3b2f;
+  --shadow: 0 18px 40px rgba(48, 36, 18, 0.08);
+  font-family: "Segoe UI", "Avenir Next", "Trebuchet MS", sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at top left, rgba(13, 106, 79, 0.08), transparent 32rem),
+    var(--paper);
+}
+
+button, textarea { font: inherit; }
+
+.app {
+  width: min(1120px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 28px 0 48px;
+}
+
+.masthead {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: end;
+  border-bottom: 1px solid var(--ink);
+  padding-bottom: 16px;
+}
+
+.kicker {
+  margin: 0 0 6px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  color: var(--green);
+}
+
+h1 {
+  margin: 0;
+  font-family: Georgia, "Iowan Old Style", serif;
+  font-size: 3rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+}
+
+.caller {
+  margin: 0;
+  max-width: 36rem;
+  text-align: right;
+  color: var(--muted);
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 22px;
+  margin-top: 22px;
+}
+
+.rail, .conversation {
+  background: var(--card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.rail { padding: 18px; }
+
+.rail h2, .trace summary {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rail p, .status {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.suggestions button, .send {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.suggestions button:hover, .send:hover { border-color: var(--green); color: var(--green-ink); }
+
+.suggestions button:disabled, .send:disabled { cursor: wait; opacity: 0.6; }
+
+.conversation { min-height: 640px; display: flex; flex-direction: column; }
+
+.transcript {
+  flex: 1;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.bubble {
+  max-width: 46rem;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.bubble.user {
+  align-self: end;
+  background: #f7f1e6;
+}
+
+.bubble.assistant { background: white; }
+
+.bubble.refused { border-color: var(--refused); }
+
+.bubble.error { border-color: var(--refused); background: #fff5f2; }
+
+.meta {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.trace { margin-top: 10px; }
+
+.trace pre {
+  overflow: auto;
+  max-height: 220px;
+  padding: 10px;
+  background: #1b2430;
+  color: #f3ecdf;
+  font-size: 0.78rem;
+}
+
+.composer {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  padding: 14px;
+  border-top: 1px solid var(--line);
+}
+
+textarea {
+  resize: vertical;
+  min-height: 74px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  background: white;
+  color: var(--ink);
+}
+
+textarea:focus, button:focus-visible {
+  outline: 2px solid var(--green);
+  outline-offset: 2px;
+}
+
+.send { background: var(--green); color: white; border-color: var(--green); }
+
+.banner {
+  margin-top: 14px;
+  padding: 10px 12px;
+  background: #fff5f2;
+  border: 1px solid var(--refused);
+}
+
+@media (max-width: 800px) {
+  .masthead, .shell, .composer { display: block; }
+  .caller { text-align: left; margin-top: 12px; }
+  h1 { font-size: 2.4rem; }
+  .suggestions { margin-bottom: 16px; }
+  .conversation { margin-top: 16px; }
+  .send { margin-top: 10px; }
+}

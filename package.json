@@ -1,0 +1,17 @@
+{
+  "name": "wagepoint-ledger-logic",
+  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n agent,web -c cyan,magenta \"npm run dev -w @ledger/agent\" \"npm run dev -w @ledger/web\"",
+    "test": "vitest run",
+    "typecheck": "tsc -p apps/agent --noEmit"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "typescript": "^5.9.3",
+    "vitest": "^3.2.4"
+  }
+}

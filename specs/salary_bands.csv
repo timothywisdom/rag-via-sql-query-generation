@@ -1,0 +1,105 @@
+city,region,country,role_level,salary_band_min,salary_band_max,cost_of_living_index
+Manhattan,New York,USA,Entry Level,48000,58000,187
+Manhattan,New York,USA,Individual Contributor,62000,95000,187
+Manhattan,New York,USA,Senior Individual Contributor,98000,145000,187
+Manhattan,New York,USA,Manager,115000,165000,187
+Manhattan,New York,USA,Senior Manager,145000,195000,187
+Manhattan,New York,USA,Director,175000,245000,187
+Manhattan,New York,USA,VP,225000,320000,187
+Manhattan,New York,USA,C-Suite,345000,500000,187
+Brooklyn,New York,USA,Entry Level,42000,52000,165
+Brooklyn,New York,USA,Individual Contributor,55000,78000,165
+Brooklyn,New York,USA,Senior Individual Contributor,82000,115000,165
+Brooklyn,New York,USA,Manager,88000,125000,165
+Brooklyn,New York,USA,Senior Manager,118000,155000,165
+Brooklyn,New York,USA,Director,145000,195000,165
+Brooklyn,New York,USA,VP,185000,265000,165
+Brooklyn,New York,USA,C-Suite,255000,380000,165
+San Francisco,California,USA,Entry Level,55000,68000,179
+San Francisco,California,USA,Individual Contributor,72000,115000,179
+San Francisco,California,USA,Senior Individual Contributor,118000,165000,179
+San Francisco,California,USA,Manager,135000,185000,179
+San Francisco,California,USA,Senior Manager,165000,225000,179
+San Francisco,California,USA,Director,195000,275000,179
+San Francisco,California,USA,VP,255000,365000,179
+San Francisco,California,USA,C-Suite,385000,520000,179
+Seattle,Washington,USA,Entry Level,52000,62000,172
+Seattle,Washington,USA,Individual Contributor,68000,105000,172
+Seattle,Washington,USA,Senior Individual Contributor,108000,155000,172
+Seattle,Washington,USA,Manager,125000,175000,172
+Seattle,Washington,USA,Senior Manager,155000,215000,172
+Seattle,Washington,USA,Director,185000,265000,172
+Seattle,Washington,USA,VP,245000,345000,172
+Seattle,Washington,USA,C-Suite,365000,485000,172
+Chicago,Illinois,USA,Entry Level,45000,55000,107
+Chicago,Illinois,USA,Individual Contributor,58000,85000,107
+Chicago,Illinois,USA,Senior Individual Contributor,88000,125000,107
+Chicago,Illinois,USA,Manager,105000,145000,107
+Chicago,Illinois,USA,Senior Manager,135000,175000,107
+Chicago,Illinois,USA,Director,165000,225000,107
+Chicago,Illinois,USA,VP,205000,285000,107
+Chicago,Illinois,USA,C-Suite,305000,420000,107
+Boston,Massachusetts,USA,Entry Level,48000,58000,152
+Boston,Massachusetts,USA,Individual Contributor,62000,92000,152
+Boston,Massachusetts,USA,Senior Individual Contributor,95000,135000,152
+Boston,Massachusetts,USA,Manager,115000,158000,152
+Boston,Massachusetts,USA,Senior Manager,145000,195000,152
+Boston,Massachusetts,USA,Director,175000,245000,152
+Boston,Massachusetts,USA,VP,225000,315000,152
+Boston,Massachusetts,USA,C-Suite,335000,465000,152
+Austin,Texas,USA,Entry Level,42000,52000,118
+Austin,Texas,USA,Individual Contributor,55000,82000,118
+Austin,Texas,USA,Senior Individual Contributor,85000,125000,118
+Austin,Texas,USA,Manager,105000,145000,118
+Austin,Texas,USA,Senior Manager,135000,175000,118
+Austin,Texas,USA,Director,165000,225000,118
+Austin,Texas,USA,VP,205000,285000,118
+Austin,Texas,USA,C-Suite,305000,420000,118
+Denver,Colorado,USA,Entry Level,44000,54000,128
+Denver,Colorado,USA,Individual Contributor,58000,85000,128
+Denver,Colorado,USA,Senior Individual Contributor,88000,128000,128
+Denver,Colorado,USA,Manager,108000,148000,128
+Denver,Colorado,USA,Senior Manager,138000,178000,128
+Denver,Colorado,USA,Director,168000,228000,128
+Denver,Colorado,USA,VP,208000,295000,128
+Denver,Colorado,USA,C-Suite,315000,435000,128
+Miami,Florida,USA,Entry Level,40000,50000,128
+Miami,Florida,USA,Individual Contributor,52000,78000,128
+Miami,Florida,USA,Senior Individual Contributor,82000,118000,128
+Miami,Florida,USA,Manager,98000,138000,128
+Miami,Florida,USA,Senior Manager,128000,168000,128
+Miami,Florida,USA,Director,158000,218000,128
+Miami,Florida,USA,VP,198000,278000,128
+Miami,Florida,USA,C-Suite,298000,415000,128
+Toronto,Ontario,Canada,Entry Level,46000,56000,141
+Toronto,Ontario,Canada,Individual Contributor,58000,88000,141
+Toronto,Ontario,Canada,Senior Individual Contributor,92000,132000,141
+Toronto,Ontario,Canada,Manager,112000,152000,141
+Toronto,Ontario,Canada,Senior Manager,142000,185000,141
+Toronto,Ontario,Canada,Director,172000,235000,141
+Toronto,Ontario,Canada,VP,215000,305000,141
+Toronto,Ontario,Canada,C-Suite,325000,445000,141
+Vancouver,British Columbia,Canada,Entry Level,48000,58000,155
+Vancouver,British Columbia,Canada,Individual Contributor,62000,92000,155
+Vancouver,British Columbia,Canada,Senior Individual Contributor,95000,138000,155
+Vancouver,British Columbia,Canada,Manager,118000,158000,155
+Vancouver,British Columbia,Canada,Senior Manager,148000,195000,155
+Vancouver,British Columbia,Canada,Director,178000,245000,155
+Vancouver,British Columbia,Canada,VP,225000,318000,155
+Vancouver,British Columbia,Canada,C-Suite,338000,465000,155
+Calgary,Alberta,Canada,Entry Level,44000,54000,121
+Calgary,Alberta,Canada,Individual Contributor,56000,85000,121
+Calgary,Alberta,Canada,Senior Individual Contributor,88000,128000,121
+Calgary,Alberta,Canada,Manager,108000,148000,121
+Calgary,Alberta,Canada,Senior Manager,138000,178000,121
+Calgary,Alberta,Canada,Director,168000,228000,121
+Calgary,Alberta,Canada,VP,208000,295000,121
+Calgary,Alberta,Canada,C-Suite,315000,435000,121
+Nunavut,Nunavut,Canada,Entry Level,58000,72000,168
+Nunavut,Nunavut,Canada,Individual Contributor,75000,108000,168
+Nunavut,Nunavut,Canada,Senior Individual Contributor,112000,158000,168
+Nunavut,Nunavut,Canada,Manager,138000,185000,168
+Nunavut,Nunavut,Canada,Senior Manager,175000,225000,168
+Nunavut,Nunavut,Canada,Director,215000,285000,168
+Nunavut,Nunavut,Canada,VP,265000,365000,168
+Nunavut,Nunavut,Canada,C-Suite,385000,525000,168
