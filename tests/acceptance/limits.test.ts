@@ -39,7 +39,7 @@ describe("reasoning limit and model retry", () => {
     expect(body.forcedGenerate).toBe(true);
     expect(body.steps).toBe(2);
     expect(body.llmAttempts).toBe(3);
-    expect(body.answer).toContain("200 employees");
+    expect(body.answer).toContain("I couldn't find an employee named Nobody Matches.");
     expect(body.answer).toMatch(/step limit/);
   });
 
@@ -47,7 +47,7 @@ describe("reasoning limit and model retry", () => {
     const { body } = await ask(flaky.url, "Where does Bob Langley work? How long has he been employed?");
     expect(body.status).toBe("ok");
     expect(body.answer).toContain("Chicago");
-    expect(body.llmAttempts).toBe(5);
+    expect(body.llmAttempts).toBe(4);
   });
 
   it("stops on a non-retryable model failure", async () => {

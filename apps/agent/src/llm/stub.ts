@@ -33,7 +33,10 @@ export class StubProvider implements LlmProvider {
       return new AIMessage(renderFromMessages(request.messages));
     }
     if (this.options.alwaysTool) {
-      return toolCall({ metrics: [{ fn: "count" }] });
+      return toolCall({
+        filters: [{ field: "name", op: "eq", value: "Nobody Matches" }],
+        fields: ["full_name"],
+      });
     }
     if (hasToolResult(request.messages)) {
       return new AIMessage("");
