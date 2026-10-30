@@ -1,4 +1,5 @@
 import { fileURLToPath } from "node:url";
+import { MAX_JUDGE_RETRY_ATTEMPTS } from "./eval/judge";
 
 export type AppConfig = {
   host: string;
@@ -21,6 +22,7 @@ export type AppConfig = {
   llmFailFirstN: number;
   onlineEval: boolean;
   onlineEvalMaxRetries: number;
+  maxJudgeAttempts: number;
 };
 
 export function defaultDataDir(): string {
@@ -56,6 +58,10 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): AppConfig {
   if (onlineEvalMaxRetries < 0 || onlineEvalMaxRetries > 2) {
     throw new Error("ONLINE_EVAL_MAX_RETRIES must be from 0 to 2.");
   }
+  const maxJudgeAttempts = intEnv(env, "MAX_JUDGE_RETRY_ATTEMPTS", MAX_JUDGE_RETRY_ATTEMPTS);
+  if (maxJudgeAttempts < 1 || maxJudgeAttempts > 5) {
+    throw new Error("MAX_JUDGE_RETRY_ATTEMPTS must be from 1 to 5.");
+  }
 
   return {
     host: env.HOST || "127.0.0.1",
@@ -78,6 +84,7 @@ export function configFromEnv(env: NodeJS.ProcessEnv = process.env): AppConfig {
     llmFailFirstN: intEnv(env, "LLM_FAIL_FIRST_N", 0),
     onlineEval: env.ONLINE_EVAL === "1",
     onlineEvalMaxRetries,
+    maxJudgeAttempts,
   };
 }
 

@@ -1,4 +1,4 @@
-import { HumanMessage, SystemMessage } from "@langchain/core/messages";
+import { AIMessage, HumanMessage, SystemMessage, type BaseMessage } from "@langchain/core/messages";
 import type { LlmFailure } from "../llm/types";
 import type { LlmService } from "../llm/service";
 
@@ -16,6 +16,8 @@ export type JudgeCase = {
 };
 
 export type JudgedAnswer = JudgeScore & { attempts: number };
+
+export const MAX_JUDGE_RETRY_ATTEMPTS = 3;
 
 export const JUDGE_SYSTEM = `You score one payroll-assistant answer. Reply with JSON only, no markdown:
 {"accuracy":0,"groundedness":0,"failures":["short reason"]}
@@ -36,30 +38,41 @@ export async function judgeAnswer(
   answer: string,
   status: string,
   context: string,
+  maxAttempts = MAX_JUDGE_RETRY_ATTEMPTS,
 ): Promise<JudgedAnswer> {
   const required = item.mustInclude.length > 0 ? item.mustInclude.join("; ") : "(none)";
   const forbidden = item.mustExclude.length > 0 ? item.mustExclude.join("; ") : "(none)";
-  const result = await llm.invoke({
-    mode: "generate",
-    messages: [
-      new SystemMessage(JUDGE_SYSTEM),
-      new HumanMessage(
-        `Question: ${item.query}
+  const brief = `Question: ${item.query}
 Expected status: ${item.expectStatus}
 Required facts: ${required}
 Forbidden figures: ${forbidden}
 Tool results: ${context}
 Answer status: ${status}
-Answer: ${answer}`,
-      ),
-    ],
-  });
-  try {
-    return { ...parseJudgeScore(textOf(result.message)), attempts: result.attempts };
-  } catch (error) {
-    if (error instanceof Error) (error as LlmFailure).attempts = result.attempts;
-    throw error;
+Answer: ${answer}`;
+  const messages: BaseMessage[] = [new SystemMessage(JUDGE_SYSTEM), new HumanMessage(brief)];
+  let attempts = 0;
+  let lastError = "The judge did not return JSON.";
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    const result = await llm.invoke({ mode: "generate", messages });
+    attempts += result.attempts;
+    const text = textOf(result.message);
+    try {
+      return { ...parseJudgeScore(text), attempts };
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : lastError;
+      if (attempt === maxAttempts) break;
+      messages.push(
+        new AIMessage(text),
+        new HumanMessage(
+          `That reply failed: ${lastError}
+Reply with JSON only, in the required shape.`,
+        ),
+      );
+    }
   }
+  const failure = new Error(lastError) as LlmFailure;
+  failure.attempts = attempts;
+  throw failure;
 }
 
 export function parseJudgeScore(text: string): JudgeScore {

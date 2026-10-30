@@ -72,6 +72,7 @@ for (const item of cases) {
           result.answer ?? "",
           result.status,
           context,
+          config.maxJudgeAttempts,
         );
   if (scored.accuracy < 1 || scored.groundedness < 1) failed += 1;
   rows.push({

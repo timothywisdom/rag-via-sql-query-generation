@@ -20,6 +20,7 @@ type GraphDeps = {
   onStepLimit: "generate" | "error";
   onlineEval: boolean;
   onlineEvalMaxRetries: number;
+  maxJudgeAttempts: number;
   onEvent?: (event: StreamEvent) => void;
 };
 
@@ -188,6 +189,7 @@ async function evaluateAnswer(state: typeof LedgerState.State, deps: GraphDeps) 
       answer,
       state.status,
       context,
+      deps.maxJudgeAttempts,
     );
     const failures =
       scored.failures.length > 0 || (scored.accuracy === 1 && scored.groundedness === 1)

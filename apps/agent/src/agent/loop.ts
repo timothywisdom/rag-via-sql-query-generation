@@ -41,6 +41,7 @@ export async function runLedgerAgent(
     onStepLimit: config.onStepLimit,
     onlineEval: config.onlineEval,
     onlineEvalMaxRetries: config.onlineEvalMaxRetries,
+    maxJudgeAttempts: config.maxJudgeAttempts,
     onEvent,
   });
   const final = await graph.invoke({

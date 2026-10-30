@@ -49,6 +49,7 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     llmFailFirstN: 0,
     onlineEval: false,
     onlineEvalMaxRetries: 1,
+    maxJudgeAttempts: 3,
     ...overrides,
   };
 }

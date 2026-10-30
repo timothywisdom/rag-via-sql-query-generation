@@ -1,4 +1,9 @@
-export const CALLER_ROLES = ["junior_hr_assistant", "staff", "manager", "executive"] as const;
+export const CALLER_ROLES = [
+  "junior_hr_assistant",
+  "staff",
+  "manager",
+  "executive",
+] as const;
 
 export type CallerRole = (typeof CALLER_ROLES)[number];
 
@@ -46,7 +51,10 @@ export function payPolicy(caller: CallerRole): PayPolicy {
   return policies[caller];
 }
 
-export function visiblePayExpression(column: string, visiblePay: readonly string[]): string {
+export function visiblePayExpression(
+  column: string,
+  visiblePay: readonly string[],
+): string {
   if (visiblePay.length === 0) return "NULL";
   const list = visiblePay.map((level) => `'${level}'`).join(", ");
   return `CASE WHEN e.access_level IN (${list}) THEN e.${column} ELSE NULL END`;

@@ -4,7 +4,7 @@ import type { StreamEvent } from "../../apps/agent/src/agent/events";
 import { buildLedgerGraph } from "../../apps/agent/src/agent/graph";
 import { systemPrompt } from "../../apps/agent/src/agent/prompt";
 import { defaultDataDir } from "../../apps/agent/src/config";
-import { JUDGE_SYSTEM, parseJudgeScore } from "../../apps/agent/src/eval/judge";
+import { JUDGE_SYSTEM, judgeAnswer, parseJudgeScore } from "../../apps/agent/src/eval/judge";
 import { scoreAccuracy, scoreGroundedness, type GoldenCase } from "../../apps/agent/src/eval/score";
 import { loadLedger } from "../../apps/agent/src/ledger/database";
 import { LlmService } from "../../apps/agent/src/llm/service";
@@ -72,6 +72,49 @@ describe("answer scores", () => {
     expect(grounded.groundedness).toBe(1);
   });
 
+  it("asks the judge again when the reply is not JSON and includes the error", async () => {
+    const model = new RepairingJudge();
+    const scored = await judgeAnswer(
+      new LlmService(model, 1, 1),
+      {
+        query: "What is Horatio Kane's salary?",
+        expectStatus: "refused",
+        mustInclude: [],
+        mustExclude: [],
+      },
+      "I can't share Horatio Kane's compensation.",
+      "refused",
+      "{}",
+      3,
+    );
+    expect(scored).toMatchObject({ accuracy: 1, groundedness: 1, attempts: 2 });
+    const correction = model.requests[1]?.messages.at(-1);
+    const correctionText = typeof correction?.content === "string" ? correction.content : "";
+    expect(correctionText).toContain("The judge did not return JSON.");
+    expect(correctionText).toContain("Reply with JSON only");
+  });
+
+  it("stops after the judge retry limit", async () => {
+    const model = new RepairingJudge();
+    model.alwaysProse = true;
+    await expect(
+      judgeAnswer(
+        new LlmService(model, 1, 1),
+        {
+          query: "What is Horatio Kane's salary?",
+          expectStatus: "refused",
+          mustInclude: [],
+          mustExclude: [],
+        },
+        "I can't share Horatio Kane's compensation.",
+        "refused",
+        "{}",
+        3,
+      ),
+    ).rejects.toThrow("The judge did not return JSON.");
+    expect(model.requests).toHaveLength(3);
+  });
+
   it("reads a judge score from a JSON object", () => {
     const scored = parseJudgeScore(
       '```json\n{"accuracy": 1, "groundedness": 0.5, "failures": ["The figure 46000 is not supported."]}\n```',
@@ -136,11 +179,23 @@ describe("online groundedness check", () => {
     broken.judgeText = "I think this answer is fine.";
     const result = await runHoratio(broken, true);
     expect(broken.generates).toBe(1);
-    expect(broken.judgments).toBe(1);
+    expect(broken.judgments).toBe(3);
     expect(result.answer).toContain("$485,000.00");
     expect(result.evaluation?.passed).toBe(false);
   });
 });
+
+class RepairingJudge implements LlmProvider {
+  readonly name = "repairing-judge";
+  readonly requests: LlmRequest[] = [];
+  alwaysProse = false;
+
+  async invoke(request: LlmRequest): Promise<AIMessage> {
+    this.requests.push(request);
+    if (this.alwaysProse || this.requests.length === 1) return new AIMessage("The answer looks fine.");
+    return new AIMessage('{"accuracy":1,"groundedness":1,"failures":[]}');
+  }
+}
 
 class ScriptedModel implements LlmProvider {
   readonly name = "scripted";
@@ -195,6 +250,7 @@ async function runHoratio(model: ScriptedModel, onlineEval: boolean, events?: St
     onStepLimit: "generate",
     onlineEval,
     onlineEvalMaxRetries: 1,
+    maxJudgeAttempts: 3,
     onEvent: events ? (event) => events.push(event) : undefined,
   });
   const final = await graph.invoke({
