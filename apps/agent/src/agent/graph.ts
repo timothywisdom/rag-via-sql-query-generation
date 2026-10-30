@@ -7,6 +7,7 @@ import { judgeAnswer } from "../eval/judge";
 import { scoreGroundedness, toolContext, type GroundednessReport } from "../eval/score";
 import { createLedgerTool } from "../tools/query-ledger";
 import { trace as logTrace } from "../log";
+import type { StreamEvent } from "./events";
 import { generatePrompt, revisionPrompt } from "./prompt";
 import { LedgerState, type Hop, type TraceEvent } from "./state";
 
@@ -19,6 +20,7 @@ type GraphDeps = {
   onStepLimit: "generate" | "error";
   onlineEval: boolean;
   onlineEvalMaxRetries: number;
+  onEvent?: (event: StreamEvent) => void;
 };
 
 export function buildLedgerGraph(deps: GraphDeps) {
@@ -44,7 +46,17 @@ function afterGenerate(state: typeof LedgerState.State, deps: GraphDeps): "evalu
   return "evaluate";
 }
 
+function liveStream(deps: GraphDeps): boolean {
+  return !deps.onlineEval && deps.onEvent !== undefined;
+}
+
+function emit(deps: GraphDeps, event: StreamEvent): void {
+  if (!liveStream(deps)) return;
+  deps.onEvent?.(event);
+}
+
 async function reason(state: typeof LedgerState.State, deps: GraphDeps) {
+  emit(deps, { type: "status", phase: "reason" });
   logTrace("hop", { node: "reason", steps: state.steps });
   const reasoned = await callModel(deps.llm, {
     messages: state.messages,
@@ -61,6 +73,7 @@ async function reason(state: typeof LedgerState.State, deps: GraphDeps) {
 }
 
 async function runTools(state: typeof LedgerState.State, deps: GraphDeps) {
+  emit(deps, { type: "status", phase: "tools" });
   const last = state.messages[state.messages.length - 1];
   const calls = last instanceof AIMessage ? (last.tool_calls ?? []) : [];
   const messages: BaseMessage[] = [];
@@ -122,10 +135,15 @@ function finishedLookup(status: string): boolean {
 
 async function generate(state: typeof LedgerState.State, deps: GraphDeps) {
   logTrace("hop", { node: "generate", steps: state.steps, forced: state.forcedGenerate });
-  const generated = await callModel(deps.llm, {
+  if (state.evalAttempts > 0) emit(deps, { type: "replace" });
+  emit(deps, { type: "status", phase: "generate" });
+  const request: LlmRequest = {
     messages: [...state.messages, new SystemMessage(generatePrompt(state.forcedGenerate))],
     mode: "generate",
-  });
+  };
+  const generated = liveStream(deps)
+    ? await streamAnswer(deps.llm, request, (piece) => emit(deps, { type: "token", text: piece }))
+    : await callModel(deps.llm, request);
   const llmAttempts = state.llmAttempts + generated.attempts;
   if (!generated.ok) return modelFailure(llmAttempts, generated.error);
   const answer = textContent(generated.message).trim();
@@ -133,6 +151,7 @@ async function generate(state: typeof LedgerState.State, deps: GraphDeps) {
   const note = state.forcedGenerate
     ? "\n\nAnswered from the lookups completed before the step limit."
     : "";
+  if (note) emit(deps, { type: "token", text: note });
   const last = state.trace[state.trace.length - 1];
   return {
     llmAttempts,
@@ -143,6 +162,7 @@ async function generate(state: typeof LedgerState.State, deps: GraphDeps) {
 }
 
 async function evaluateAnswer(state: typeof LedgerState.State, deps: GraphDeps) {
+  emit(deps, { type: "status", phase: "evaluate" });
   const answer = state.answer ?? "";
   const question = askedQuestion(state);
   const context = toolContext(state.trace);
@@ -280,13 +300,30 @@ async function callModel(llm: LlmService, request: LlmRequest): Promise<ModelCal
     const result = await llm.invoke(request);
     return { ok: true, message: result.message, attempts: result.attempts };
   } catch (error) {
-    const failure = error as LlmFailure;
-    return {
-      ok: false,
-      error: "The language model request failed.",
-      attempts: failure.attempts ?? 1,
-    };
+    return modelCallFailure(error);
   }
+}
+
+async function streamAnswer(
+  llm: LlmService,
+  request: LlmRequest,
+  onToken: (text: string) => void,
+): Promise<ModelCall> {
+  try {
+    const result = await llm.streamGenerate(request, onToken);
+    return { ok: true, message: result.message, attempts: result.attempts };
+  } catch (error) {
+    return modelCallFailure(error);
+  }
+}
+
+function modelCallFailure(error: unknown): ModelCall {
+  const failure = error as LlmFailure;
+  return {
+    ok: false,
+    error: "The language model request failed.",
+    attempts: failure.attempts ?? 1,
+  };
 }
 
 function textContent(message: AIMessage): string {

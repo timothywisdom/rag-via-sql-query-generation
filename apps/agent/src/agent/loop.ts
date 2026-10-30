@@ -4,6 +4,7 @@ import type { CallerRole } from "../ledger/callers";
 import type { LedgerDatabase } from "../ledger/database";
 import { LlmService } from "../llm/service";
 import { createLedgerTool } from "../tools/query-ledger";
+import type { StreamEvent } from "./events";
 import { buildLedgerGraph } from "./graph";
 import { systemPrompt } from "./prompt";
 import type { GroundednessReport } from "../eval/score";
@@ -30,6 +31,7 @@ export async function runLedgerAgent(
   config: AppConfig,
   query: string,
   caller: CallerRole,
+  onEvent?: (event: StreamEvent) => void,
 ): Promise<AgentResponse> {
   const ledgerTool = createLedgerTool(db, config.asOfDate, caller);
   const graph = buildLedgerGraph({
@@ -39,6 +41,7 @@ export async function runLedgerAgent(
     onStepLimit: config.onStepLimit,
     onlineEval: config.onlineEval,
     onlineEvalMaxRetries: config.onlineEvalMaxRetries,
+    onEvent,
   });
   const final = await graph.invoke({
     messages: [new SystemMessage(systemPrompt(config.asOfDate, caller)), new HumanMessage(query)],

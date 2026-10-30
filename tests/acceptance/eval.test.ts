@@ -1,5 +1,6 @@
 import { AIMessage, HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { afterAll, describe, expect, it } from "vitest";
+import type { StreamEvent } from "../../apps/agent/src/agent/events";
 import { buildLedgerGraph } from "../../apps/agent/src/agent/graph";
 import { systemPrompt } from "../../apps/agent/src/agent/prompt";
 import { defaultDataDir } from "../../apps/agent/src/config";
@@ -120,6 +121,16 @@ describe("online groundedness check", () => {
     expect(result.evaluation).toBeNull();
   });
 
+  it("does not stream a draft while the live check can regenerate it", async () => {
+    const checked = new ScriptedModel();
+    const events: StreamEvent[] = [];
+    const result = await runHoratio(checked, true, events);
+    expect(events).toEqual([]);
+    expect(checked.generates).toBe(2);
+    expect(result.answer).not.toMatch(/485/);
+    expect(result.evaluation?.passed).toBe(true);
+  });
+
   it("keeps the answer when the judge does not return a score", async () => {
     const broken = new ScriptedModel();
     broken.judgeText = "I think this answer is fine.";
@@ -176,7 +187,7 @@ class ScriptedModel implements LlmProvider {
   }
 }
 
-async function runHoratio(model: ScriptedModel, onlineEval: boolean) {
+async function runHoratio(model: ScriptedModel, onlineEval: boolean, events?: StreamEvent[]) {
   const graph = buildLedgerGraph({
     llm: new LlmService(model, 1, 1),
     ledgerTool: createLedgerTool(db, "2026-10-29", "junior_hr_assistant"),
@@ -184,6 +195,7 @@ async function runHoratio(model: ScriptedModel, onlineEval: boolean) {
     onStepLimit: "generate",
     onlineEval,
     onlineEvalMaxRetries: 1,
+    onEvent: events ? (event) => events.push(event) : undefined,
   });
   const final = await graph.invoke({
     messages: [

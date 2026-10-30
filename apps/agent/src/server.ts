@@ -4,6 +4,7 @@ import {
   type ServerResponse,
 } from "node:http";
 import type { AddressInfo } from "node:net";
+import { encodeSse, type StreamEvent } from "./agent/events";
 import { runLedgerAgent } from "./agent/loop";
 import { CALLER_HEADER, isCallerRole } from "./ledger/callers";
 import { configFromEnv, type AppConfig } from "./config";
@@ -133,10 +134,19 @@ async function answer(
     return;
   }
 
+  const stream = acceptsStream(req) && !config.onlineEval;
   try {
     const payload = await withRequestId(requestId, async () => {
       trace("request", { model: modelId, caller, query: query.slice(0, 240) });
-      const result = await runLedgerAgent(db, selected, config, query, caller);
+      if (stream) beginStream(res);
+      const result = await runLedgerAgent(
+        db,
+        selected,
+        config,
+        query,
+        caller,
+        stream ? (event) => writeStream(res, event) : undefined,
+      );
       return {
         ...result,
         requestId,
@@ -159,18 +169,49 @@ async function answer(
         ? { groundedness: payload.evaluation.groundedness, grounded: payload.evaluation.passed }
         : {}),
     });
+    if (stream) {
+      writeStream(res, { type: "done", payload });
+      res.end();
+      return;
+    }
     send(res, 200, payload);
   } catch (error) {
     trace("request_failed", {
       requestId,
       message: error instanceof Error ? error.message : "error",
     });
+    const message = "The agent failed before it could answer.";
+    if (stream && res.headersSent) {
+      writeStream(res, { type: "error", error: message });
+      res.end();
+      return;
+    }
     send(res, 500, {
       status: "error",
-      error: "The agent failed before it could answer.",
+      error: message,
       requestId,
     });
   }
+}
+
+function acceptsStream(req: IncomingMessage): boolean {
+  const accept = req.headers.accept;
+  const value = Array.isArray(accept) ? accept.join(",") : (accept ?? "");
+  return value.includes("text/event-stream");
+}
+
+function beginStream(res: ServerResponse): void {
+  res.socket?.setNoDelay(true);
+  res.writeHead(200, {
+    "content-type": "text/event-stream; charset=utf-8",
+    "cache-control": "no-cache, no-transform",
+    "x-accel-buffering": "no",
+  });
+}
+
+function writeStream(res: ServerResponse, event: StreamEvent): void {
+  if (res.writableEnded || res.destroyed) return;
+  res.write(encodeSse(event));
 }
 
 function headerValue(req: IncomingMessage, name: string): string | undefined {

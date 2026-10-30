@@ -2,6 +2,8 @@ import { CALLER_HEADER, isCallerRole } from "../../../roles";
 
 const MODEL_HEADER = "x-model";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: Request): Promise<Response> {
   let body: { query?: unknown };
   try {
@@ -30,6 +32,7 @@ export async function POST(request: Request): Promise<Response> {
     );
   }
   const model = request.headers.get(MODEL_HEADER)?.trim() || "stub";
+  const stream = request.headers.get("accept")?.includes("text/event-stream") ?? false;
 
   const agentUrl = process.env.AGENT_SERVICE_URL;
   if (!agentUrl) {
@@ -52,12 +55,25 @@ export async function POST(request: Request): Promise<Response> {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        ...(stream ? { accept: "text/event-stream" } : {}),
         [CALLER_HEADER]: caller,
         [MODEL_HEADER]: model,
       },
       body: JSON.stringify({ query, caller }),
       signal: AbortSignal.timeout(180000),
     });
+    const type = upstream.headers.get("content-type") ?? "";
+    if (stream && type.includes("text/event-stream") && upstream.body) {
+      console.log(JSON.stringify({ event: "chat_stream", model, status: upstream.status }));
+      return new Response(upstream.body, {
+        status: upstream.status,
+        headers: {
+          "content-type": "text/event-stream; charset=utf-8",
+          "cache-control": "no-cache, no-transform",
+          "x-accel-buffering": "no",
+        },
+      });
+    }
     const payload = (await upstream.json()) as unknown;
     console.log(
       JSON.stringify({ event: "chat_done", model, status: upstream.status }),

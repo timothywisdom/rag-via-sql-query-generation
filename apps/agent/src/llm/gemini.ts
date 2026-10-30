@@ -10,6 +10,7 @@ import {
   SELECT_FIELDS,
 } from "../ledger/catalog";
 import { ROLE_LEVELS } from "../ledger/role-level";
+import { streamChat } from "./chat-stream";
 import type { LlmProvider, LlmRequest } from "./types";
 
 export const GEMINI_MODEL_ID = "gemini-3.8-flash";
@@ -108,5 +109,9 @@ export class GeminiProvider implements LlmProvider {
       });
     }
     return result as AIMessage;
+  }
+
+  stream(request: LlmRequest): AsyncIterable<string> {
+    return streamChat(this.chat, request.messages);
   }
 }

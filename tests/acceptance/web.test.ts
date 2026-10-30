@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { POST } from "../../apps/web/src/app/api/chat/route";
+import { readSse } from "../../apps/web/src/app/sse";
 import { GET as listModels } from "../../apps/web/src/app/api/models/route";
 import { GET } from "../../apps/web/src/app/api/health/route";
 import { ask, boot } from "./harness";
@@ -29,6 +30,54 @@ describe("web route calls the agent service", () => {
     expect(body.steps).toBe(1);
     expect(body.answer).toContain("Chicago");
     expect(body.answer).toContain("7 years, 7 months");
+  });
+
+  it("streams the generate step and finishes with the trace", async () => {
+    const response = await POST(
+      jsonRequest("Where does Bob Langley work? How long has he been employed?", undefined, "stub", true),
+    );
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/event-stream");
+    const messages: Array<{ event: string; data: unknown }> = [];
+    await readSse(response, (message) => messages.push(message));
+    const tokens = messages.flatMap((message) => {
+      if (message.event !== "token" || !message.data || typeof message.data !== "object") return [];
+      const text = (message.data as { text?: unknown }).text;
+      return typeof text === "string" ? [text] : [];
+    });
+    expect(tokens.length).toBeGreaterThan(1);
+    expect(tokens.join("")).toContain("Chicago");
+    const done = messages.find((message) => message.event === "done");
+    const payload = done && done.data && typeof done.data === "object" ? (done.data as { payload?: { answer?: string; trace?: unknown[]; instanceId?: string } }).payload : undefined;
+    expect(payload?.answer).toContain("Chicago");
+    expect(payload?.answer).toContain("7 years, 7 months");
+    expect(payload?.instanceId).toBe("web-target");
+    expect(payload?.trace?.length).toBeGreaterThan(0);
+    expect(messages.some((message) => message.event === "status")).toBe(true);
+  });
+
+  it("returns the finished answer instead of a stream when the live check is on", async () => {
+    const checked = await boot({ onlineEval: true, instanceId: "eval-on" });
+    try {
+      const response = await fetch(new URL("/answer", checked.url), {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          accept: "text/event-stream",
+          "x-caller-role": "junior_hr_assistant",
+        },
+        body: JSON.stringify({
+          query: "Where does Bob Langley work? How long has he been employed?",
+        }),
+      });
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain("application/json");
+      const body = (await response.json()) as { answer: string; evaluation?: { passed: boolean } };
+      expect(body.answer).toContain("Chicago");
+      expect(body.evaluation?.passed).toBe(true);
+    } finally {
+      await checked.close();
+    }
   });
 
   it("passes a compensation refusal through unchanged", async () => {
@@ -94,11 +143,12 @@ describe("web route calls the agent service", () => {
   });
 });
 
-function jsonRequest(query: string, role?: string, model?: string): Request {
+function jsonRequest(query: string, role?: string, model?: string, stream = false): Request {
   return new Request("http://ledger.local/api/chat", {
     method: "POST",
     headers: {
       "content-type": "application/json",
+      ...(stream ? { accept: "text/event-stream" } : {}),
       ...(role ? { "x-caller-role": role } : {}),
       ...(model ? { "x-model": model } : {}),
     },

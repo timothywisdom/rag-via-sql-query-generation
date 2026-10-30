@@ -158,6 +158,8 @@ h1 {
 
 .bubble.assistant { background: white; }
 
+.bubble .status { margin: 0 0 8px; color: var(--muted); font-size: 0.85rem; }
+
 .bubble.refused { border-color: var(--refused); }
 
 .bubble.error { border-color: var(--refused); background: #fff5f2; }

@@ -1,6 +1,7 @@
 import { AIMessage, type BaseMessage } from "@langchain/core/messages";
 import { DEPARTMENTS } from "../ledger/catalog";
 import type { LedgerResult } from "../ledger/query";
+import { textOf } from "./text";
 import type { LlmProvider, LlmRequest } from "./types";
 
 const TOKEN = String.raw`[A-Z][a-z]*(?:'[A-Z][a-z]+)?`;
@@ -44,6 +45,16 @@ export class StubProvider implements LlmProvider {
     const planned = planQuery(firstHuman(request.messages));
     if (!planned) return new AIMessage("");
     return toolCall(planned);
+  }
+
+  async *stream(request: LlmRequest): AsyncIterable<string> {
+    const message = await this.invoke(request);
+    const text = textOf(message.content);
+    const parts = text.split(/(\s+)/).filter((part) => part.length > 0);
+    for (const part of parts) {
+      yield part;
+      await new Promise((resolve) => setTimeout(resolve, 12));
+    }
   }
 }
 

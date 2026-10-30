@@ -12,6 +12,7 @@ export type LlmRequest = {
 export interface LlmProvider {
   readonly name: string;
   invoke(request: LlmRequest): Promise<AIMessage>;
+  stream?(request: LlmRequest): AsyncIterable<string>;
 }
 
 export type LlmFailure = Error & { retryable?: boolean; attempts?: number };

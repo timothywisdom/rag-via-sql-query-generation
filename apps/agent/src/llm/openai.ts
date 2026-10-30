@@ -1,5 +1,6 @@
 import { ChatOpenAI } from "@langchain/openai";
 import { AIMessage } from "@langchain/core/messages";
+import { streamChat } from "./chat-stream";
 import type { LlmProvider, LlmRequest } from "./types";
 
 export class OpenAiProvider implements LlmProvider {
@@ -31,5 +32,9 @@ export class OpenAiProvider implements LlmProvider {
       );
     }
     return result as AIMessage;
+  }
+
+  stream(request: LlmRequest): AsyncIterable<string> {
+    return streamChat(this.chat, request.messages);
   }
 }

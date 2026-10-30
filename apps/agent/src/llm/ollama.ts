@@ -1,4 +1,5 @@
 import { ChatOpenAI } from "@langchain/openai";
+import { streamChat } from "./chat-stream";
 import { AIMessage } from "@langchain/core/messages";
 import {
   COMPENSATION_FIELDS,
@@ -149,5 +150,9 @@ export class OllamaProvider implements LlmProvider {
       );
     }
     return result as AIMessage;
+  }
+
+  stream(request: LlmRequest): AsyncIterable<string> {
+    return streamChat(this.chat, request.messages);
   }
 }

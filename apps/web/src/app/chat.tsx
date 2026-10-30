@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CALLER_HEADER, CALLER_ROLES, type CallerRole } from "../roles";
 import { AnswerText } from "./answer";
+import { readSse } from "./sse";
 
 export type ServiceHealth = {
   ok: true;
@@ -34,11 +35,21 @@ type AnswerPayload = {
   evaluation?: { groundedness: number; passed: boolean };
 };
 
+type AnswerPhase = "reason" | "tools" | "generate" | "evaluate";
+
 type Turn = {
   id: string;
   role: "user" | "assistant";
   text: string;
   payload?: AnswerPayload;
+  phase?: AnswerPhase;
+};
+
+const PHASE_LABEL: Record<AnswerPhase, string> = {
+  reason: "Choosing a lookup…",
+  tools: "Looking up the ledger…",
+  generate: "Writing the answer…",
+  evaluate: "Checking the answer…",
 };
 
 type MenuModel = { id: string; label: string; source?: "stub" | "gemini" | "ollama" | "cursor" };
@@ -58,6 +69,10 @@ function sourceFromId(id: string | undefined): NonNullable<MenuModel["source"]> 
   if (id.startsWith("gemini-")) return "gemini";
   if (id.includes(":")) return "ollama";
   return "cursor";
+}
+
+function isPhase(value: unknown): value is AnswerPhase {
+  return value === "reason" || value === "tools" || value === "generate" || value === "evaluate";
 }
 
 function countLabel(count: number, singular: string, plural: string): string {
@@ -128,39 +143,99 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
     setDraft("");
     setPending(true);
     setTurns((current) => [...current, { id: crypto.randomUUID(), role: "user", text: query }]);
+    const assistantId = crypto.randomUUID();
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "content-type": "application/json",
+          accept: "text/event-stream",
           [CALLER_HEADER]: caller,
           "x-model": model,
         },
         body: JSON.stringify({ query }),
       });
-      const payload = (await response.json()) as AnswerPayload;
-      const text = response.ok
-        ? payload.answer ?? payload.error ?? "The agent did not return an answer."
-        : payload.error ?? "The request failed.";
-      setTurns((current) => [
-        ...current,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text,
-          payload: response.ok ? payload : { ...payload, status: "error", answer: null, error: text },
-        },
-      ]);
+      const type = response.headers.get("content-type") ?? "";
+      if (!type.includes("text/event-stream")) {
+        const payload = (await response.json()) as AnswerPayload;
+        const text = response.ok
+          ? payload.answer ?? payload.error ?? "The agent did not return an answer."
+          : payload.error ?? "The request failed.";
+        setTurns((current) => [
+          ...current,
+          {
+            id: assistantId,
+            role: "assistant",
+            text,
+            payload: response.ok ? payload : { ...payload, status: "error", answer: null, error: text },
+          },
+        ]);
+        return;
+      }
+      setTurns((current) => [...current, { id: assistantId, role: "assistant", text: "", phase: "reason" }]);
+      let finished = false;
+      await readSse(response, (message) => {
+        const data = message.data;
+        if (!data || typeof data !== "object") return;
+        const record = data as { text?: unknown; phase?: unknown; payload?: AnswerPayload; error?: unknown };
+        setTurns((current) =>
+          current.map((turn) => {
+            if (turn.id !== assistantId) return turn;
+            if (message.event === "token" && typeof record.text === "string") {
+              return { ...turn, text: turn.text + record.text };
+            }
+            if (message.event === "replace") return { ...turn, text: "" };
+            if (message.event === "status" && isPhase(record.phase)) return { ...turn, phase: record.phase };
+            if (message.event === "error") {
+              finished = true;
+              const error = typeof record.error === "string" ? record.error : "The agent failed before it could answer.";
+              return { ...turn, text: error, phase: undefined, payload: { status: "error", answer: null, error } };
+            }
+            if (message.event === "done" && record.payload) {
+              finished = true;
+              const payload = record.payload;
+              const text =
+                payload.status === "error"
+                  ? payload.error ?? "The agent failed before it could answer."
+                  : payload.answer ?? turn.text;
+              return { ...turn, text, payload, phase: undefined };
+            }
+            return turn;
+          }),
+        );
+      });
+      if (!finished) {
+        setTurns((current) =>
+          current.map((turn) =>
+            turn.id === assistantId && !turn.payload
+              ? {
+                  ...turn,
+                  text: "The web server could not reach the agent service.",
+                  phase: undefined,
+                  payload: {
+                    status: "error",
+                    answer: null,
+                    error: "The web server could not reach the agent service.",
+                  },
+                }
+              : turn,
+          ),
+        );
+      }
     } catch {
-      setTurns((current) => [
-        ...current,
-        {
-          id: crypto.randomUUID(),
-          role: "assistant",
-          text: "The web server could not reach the agent service.",
-          payload: { status: "error", answer: null, error: "The web server could not reach the agent service." },
-        },
-      ]);
+      const error = "The web server could not reach the agent service.";
+      setTurns((current) => {
+        const failed = {
+          id: assistantId,
+          role: "assistant" as const,
+          text: error,
+          payload: { status: "error" as const, answer: null, error },
+        };
+        if (current.some((turn) => turn.id === assistantId)) {
+          return current.map((turn) => (turn.id === assistantId ? failed : turn));
+        }
+        return [...current, failed];
+      });
     } finally {
       setPending(false);
     }
@@ -232,11 +307,14 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
             ) : null}
             {turns.map((turn) => (
               <article key={turn.id} className={`bubble ${turn.role} ${turn.payload?.status ?? ""}`}>
-                {turn.role === "assistant" && turn.payload?.status !== "error" ? (
+                {turn.role === "assistant" && turn.text && turn.payload?.status !== "error" ? (
                   <AnswerText text={turn.text} />
                 ) : (
                   turn.text
                 )}
+                {turn.phase && (turn.text.length === 0 || turn.phase === "evaluate") ? (
+                  <p className="status">{PHASE_LABEL[turn.phase]}</p>
+                ) : null}
                 {turn.payload && turn.payload.status !== "error" ? (
                   <div className="meta">
                     Served by {turn.payload.instanceId ?? "the agent"} as {turn.payload.caller ?? caller} with{" "}
