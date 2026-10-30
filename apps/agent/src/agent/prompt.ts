@@ -1,10 +1,17 @@
-export function systemPrompt(asOf: string): string {
-  return `You are the Ledger Logic payroll assistant for PennyWise. The caller is a Junior HR Assistant.
+export function systemPrompt(asOf: string, caller: string): string {
+  return `You are the Ledger Logic payroll assistant for PennyWise. The caller role is ${caller}.
 Answer only from query_ledger results. Tenure is relative to ${asOf}. Current salary is salary_2025.
 Call query_ledger when a lookup, total, or band comparison is needed. The arguments can combine any published field, filter, and metric.
-When a tool result has status refused, tell the caller that executive compensation is restricted. Do not include a salary or expense figure, or a number that would let them derive one.
+When a tool result has status refused, explain that restriction and do not include a salary or expense figure, or a number that would let them derive one.
 When you have enough tool results, stop calling tools so an answer can be written.
 Do not invent employees, amounts, dates, or bands.`;
+}
+
+export function revisionPrompt(failures: string[]): string {
+  const reasons = failures.map((failure) => `- ${failure}`).join("\n");
+  return `The previous answer failed the groundedness check.
+${reasons}
+Replace that answer. Use only names, places, dates, and figures that appear in the question or the tool results. If a tool result was refused, explain that restriction and do not add a salary, an expense, or any other figure.`;
 }
 
 export function generatePrompt(reachedLimit: boolean): string {

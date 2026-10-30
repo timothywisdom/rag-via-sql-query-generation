@@ -1,7 +1,7 @@
+import { payPolicy, visiblePayExpression, type CallerRole } from "./callers";
 import {
   COMPENSATION_FIELDS,
   GROUP_FIELDS,
-  MIN_COMPENSATION_GROUP,
   SELECT_FIELDS,
   ledgerQuerySchema,
   type LedgerQuery,
@@ -100,6 +100,30 @@ function plainRow(row: object): Record<string, unknown> {
   return { ...(row as Record<string, unknown>) };
 }
 
+function coerceFilterValues(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return raw;
+  const query = raw as { filters?: unknown };
+  if (!Array.isArray(query.filters)) return raw;
+  return {
+    ...query,
+    filters: query.filters.map((filter) => {
+      if (!filter || typeof filter !== "object" || Array.isArray(filter)) return filter;
+      const record = filter as { value?: unknown };
+      return { ...record, value: parseListValue(record.value) };
+    }),
+  };
+}
+
+function parseListValue(value: unknown): unknown {
+  if (typeof value !== "string" || !value.trim().startsWith("[")) return value;
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed) ? parsed : value;
+  } catch {
+    return value;
+  }
+}
+
 function stringValue(value: SqlValue): string {
   return String(value);
 }
@@ -108,8 +132,9 @@ export function runLedgerQuery(
   db: LedgerDatabase,
   raw: unknown,
   asOf: string,
+  caller: CallerRole,
 ): LedgerResult {
-  const parsed = ledgerQuerySchema.safeParse(raw);
+  const parsed = ledgerQuerySchema.safeParse(coerceFilterValues(raw));
   if (!parsed.success) {
     const detail = parsed.error.issues
       .map((issue) => `${issue.path.join(".") || "query"}: ${issue.message}`)
@@ -128,7 +153,8 @@ export function runLedgerQuery(
   const resolved = resolveNames(db, shape);
   if ("status" in resolved) return resolved;
 
-  const population = countPopulation(db, resolved.filters);
+  const policy = payPolicy(caller);
+  const population = countPopulation(db, resolved.filters, policy.visiblePay);
   const compensationFields = (resolved.fields ?? []).filter((field) => compensation.has(field));
   const compensationMetrics = (resolved.metrics ?? []).filter(
     (metric) => metric.field && compensation.has(metric.field),
@@ -137,24 +163,24 @@ export function runLedgerQuery(
   const wantsMetricPay = compensationMetrics.length > 0;
 
   if (wantsMetricPay) {
-    const blocked = blockCompensationAggregate(resolved, population);
+    const blocked = blockCompensationAggregate(caller, resolved, population);
     if (blocked) return blocked;
   }
 
   if (
     wantsRowPay &&
     population.matched > 0 &&
-    population.executives === population.matched &&
-    hasPersonOrExecutiveFilter(resolved)
+    population.hidden === population.matched &&
+    (policy.visiblePay.length === 0 || restrictsToHiddenPay(resolved, policy.visiblePay))
   ) {
-    return refused(executiveRefusal(population.names));
+    return compensationRefusal(caller, population.people);
   }
 
   if (resolved.metrics?.length) {
-    return runMetrics(db, resolved, asOf, population);
+    return runMetrics(db, resolved, asOf, population, policy.minGroup);
   }
 
-  return runRows(db, resolved, asOf, population);
+  return runRows(db, resolved, asOf, population, policy.visiblePay);
 }
 
 function normalizeShape(query: LedgerQuery): LedgerQuery | LedgerResult {
@@ -260,71 +286,104 @@ function resolveNames(db: LedgerDatabase, query: LedgerQuery): LedgerQuery | Led
   return { ...query, filters };
 }
 
+type Population = {
+  matched: number;
+  hidden: number;
+  people: Array<{ name: string; accessLevel: string }>;
+};
+
 function countPopulation(
   db: LedgerDatabase,
   filters: LedgerQuery["filters"],
-): { matched: number; executives: number; names: string[] } {
+  visiblePay: readonly string[],
+): Population {
   const params: SqlValue[] = [];
   const where = buildWhere(filters ?? [], params);
+  const hiddenExpression =
+    visiblePay.length === 0
+      ? "1"
+      : `CASE WHEN e.access_level IN (${visiblePay.map((level) => `'${level}'`).join(", ")}) THEN 0 ELSE 1 END`;
   const totals = plainRow(
     db
       .prepare(
-        `SELECT COUNT(*) AS matched,
-                SUM(CASE WHEN e.access_level = 'executive' THEN 1 ELSE 0 END) AS executives
+        `SELECT COUNT(*) AS matched, SUM(${hiddenExpression}) AS hidden
          FROM employees e ${where}`,
       )
       .get(...params) as object,
   );
-  let names: string[] = [];
+  let people: Population["people"] = [];
   if ((filters ?? []).some((filter) => filter.field === "employee_id")) {
     const nameParams: SqlValue[] = [];
     const nameWhere = buildWhere(filters ?? [], nameParams);
-    names = db
-      .prepare(`SELECT full_name FROM employees e ${nameWhere}`)
+    people = db
+      .prepare(`SELECT full_name, access_level FROM employees e ${nameWhere}`)
       .all(...nameParams)
-      .map((row) => String(plainRow(row).full_name));
+      .map((row) => {
+        const record = plainRow(row);
+        return { name: String(record.full_name), accessLevel: String(record.access_level) };
+      });
   }
   return {
     matched: asNumber(totals.matched) ?? 0,
-    executives: asNumber(totals.executives) ?? 0,
-    names,
+    hidden: asNumber(totals.hidden) ?? 0,
+    people,
   };
 }
 
-function hasPersonOrExecutiveFilter(query: LedgerQuery): boolean {
+function restrictsToHiddenPay(query: LedgerQuery, visiblePay: readonly string[]): boolean {
   return (query.filters ?? []).some((filter) => {
     if (filter.field === "employee_id") return true;
     if (filter.field !== "access_level") return false;
-    const values = Array.isArray(filter.value) ? filter.value : [filter.value];
-    return values.some((value) => String(value).toLowerCase() === "executive");
+    const values = (Array.isArray(filter.value) ? filter.value : [filter.value]).map((value) =>
+      String(value).toLowerCase(),
+    );
+    return values.every((value) => !visiblePay.includes(value));
   });
 }
 
 function blockCompensationAggregate(
+  caller: CallerRole,
   query: LedgerQuery,
-  population: { matched: number; executives: number; names: string[] },
+  population: Population,
 ): LedgerResult | undefined {
+  const policy = payPolicy(caller);
+  if (!policy.allowAggregates) return compensationRefusal(caller, population.people);
   const metrics = query.metrics ?? [];
-  if (metrics.some((metric) => metric.fn === "min" || metric.fn === "max")) {
+  if (!policy.allowMinMax && metrics.some((metric) => metric.fn === "min" || metric.fn === "max")) {
     return refused(
       "I can't calculate a minimum or maximum compensation figure. That would identify one person's pay.",
     );
   }
-  if (hasPersonOrExecutiveFilter(query) && population.executives === population.matched && population.matched > 0) {
-    return refused(executiveRefusal(population.names));
+  if (
+    population.matched > 0 &&
+    population.hidden === population.matched &&
+    restrictsToHiddenPay(query, policy.visiblePay)
+  ) {
+    return compensationRefusal(caller, population.people);
   }
   const narrow = (query.filters ?? []).length > 0;
-  if (narrow && population.matched < MIN_COMPENSATION_GROUP) {
+  if (narrow && population.matched < policy.minGroup) {
     return refused("I can't total compensation for a group that small.");
   }
   return undefined;
 }
 
-function executiveRefusal(names: string[]): string {
-  if (names.length === 1) {
-    return `I can't share ${names[0]}'s compensation. Executive compensation is restricted for a Junior HR Assistant.`;
+function compensationRefusal(
+  caller: CallerRole,
+  people: Array<{ name: string; accessLevel: string }>,
+): LedgerResult {
+  if (caller === "staff") return refused("I can't share compensation with a staff caller.");
+  const person = people.length === 1 ? people[0] : undefined;
+  if (caller === "manager" && person && person.accessLevel !== "executive") {
+    return refused(`I can't share ${person.name}'s compensation. A manager can see staff pay only.`);
   }
-  return "I can't share that. Executive compensation is restricted for a Junior HR Assistant.";
+  if (person) {
+    return refused(
+      `I can't share ${person.name}'s compensation. Executive compensation is restricted for a Junior HR Assistant.`,
+    );
+  }
+  if (caller === "manager") return refused("I can't share that compensation. A manager can see staff pay only.");
+  return refused("I can't share that. Executive compensation is restricted for a Junior HR Assistant.");
 }
 
 function lookupBands(
@@ -367,7 +426,8 @@ function runMetrics(
   db: LedgerDatabase,
   query: LedgerQuery,
   asOf: string,
-  population: { matched: number; executives: number },
+  population: Population,
+  minGroup: number,
 ): LedgerResult {
   const params: SqlValue[] = [];
   const where = buildWhere(query.filters ?? [], params);
@@ -382,7 +442,7 @@ function runMetrics(
   const groupSelect = groupBy.map((field) => `${textColumns[field]} AS ${field}`);
   const having =
     groupBy.length > 0 && (query.metrics ?? []).some((metric) => metric.field && compensation.has(metric.field))
-      ? ` HAVING COUNT(*) >= ${MIN_COMPENSATION_GROUP}`
+      ? ` HAVING COUNT(*) >= ${minGroup}`
       : "";
   const sql = `SELECT ${[...groupSelect, ...metricSql].join(", ")}
     FROM employees e ${where}
@@ -443,7 +503,8 @@ function runRows(
   db: LedgerDatabase,
   query: LedgerQuery,
   asOf: string,
-  population: { executives: number },
+  population: Population,
+  visiblePay: readonly string[],
 ): LedgerResult {
   const params: SqlValue[] = [];
   let join = "";
@@ -469,9 +530,7 @@ function runRows(
   for (const field of requested) {
     if (plainColumns[field]) select.add(plainColumns[field]);
     if (moneyColumns[field]) {
-      select.add(
-        `CASE WHEN e.access_level = 'executive' THEN NULL ELSE e.${moneyColumns[field]} END AS ${moneyColumns[field]}`,
-      );
+      select.add(`${visiblePayExpression(moneyColumns[field], visiblePay)} AS ${moneyColumns[field]}`);
     }
   }
   if (query.bandCity) {
@@ -486,7 +545,7 @@ function runRows(
     const field = query.orderBy.field;
     const direction = query.orderBy.direction === "desc" ? "DESC" : "ASC";
     if (moneyColumns[field]) {
-      order = `ORDER BY CASE WHEN e.access_level = 'executive' THEN NULL ELSE e.${moneyColumns[field]} END ${direction}`;
+      order = `ORDER BY ${visiblePayExpression(moneyColumns[field], visiblePay)} ${direction}`;
     } else if (field === "tenure" || field === "hire_date") {
       order = `ORDER BY e.hire_date ${direction}`;
     } else if (plainColumns[field]) {
@@ -503,7 +562,7 @@ function runRows(
   }
 
   const rows = records.map((record) => shapeRow(record, requested, query.bandCity, asOf));
-  const suppressed = population.executives > 0 && (requestedHasPay(requested) || Boolean(query.bandCity));
+  const suppressed = population.hidden > 0 && (requestedHasPay(requested) || Boolean(query.bandCity));
   return {
     status: "ok",
     asOf,
@@ -511,7 +570,7 @@ function runRows(
     rowCount: rows.length,
     appliedFilters: query.filters ?? [],
     suppressedCompensation: suppressed || undefined,
-    message: suppressed ? "Executive compensation was omitted from these rows." : undefined,
+    message: suppressed ? "Pay this caller cannot see was omitted from these rows." : undefined,
     sql,
   };
 }

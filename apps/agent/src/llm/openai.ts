@@ -12,7 +12,7 @@ export class OpenAiProvider implements LlmProvider {
       model,
       temperature: 0,
       maxRetries: 0,
-      timeout: 30_000,
+      timeout: 30000,
     });
   }
 
@@ -23,9 +23,12 @@ export class OpenAiProvider implements LlmProvider {
         : this.chat;
     const result = await model.invoke(request.messages);
     if (result.getType() !== "ai") {
-      throw Object.assign(new Error("The language model returned a non-assistant message."), {
-        retryable: false,
-      });
+      throw Object.assign(
+        new Error("The language model returned a non-assistant message."),
+        {
+          retryable: false,
+        },
+      );
     }
     return result as AIMessage;
   }

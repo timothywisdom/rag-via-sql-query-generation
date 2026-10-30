@@ -47,6 +47,8 @@ export function testConfig(overrides: Partial<AppConfig> = {}): AppConfig {
     stubAlwaysTool: false,
     llmFailMode: "none",
     llmFailFirstN: 0,
+    onlineEval: false,
+    onlineEvalMaxRetries: 1,
     ...overrides,
   };
 }
@@ -61,8 +63,8 @@ export async function ask(baseUrl: string, query: string, caller = "junior_hr_as
 }> {
   const response = await fetch(new URL("/answer", baseUrl), {
     method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify(caller ? { query, caller } : { query }),
+    headers: { "content-type": "application/json", "x-caller-role": caller },
+    body: JSON.stringify({ query, caller }),
   });
   return { status: response.status, body: (await response.json()) as AnswerBody };
 }

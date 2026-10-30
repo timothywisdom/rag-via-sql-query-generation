@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CALLER_HEADER, CALLER_ROLES, type CallerRole } from "../roles";
+import { AnswerText } from "./answer";
 
 export type ServiceHealth = {
   ok: true;
@@ -28,6 +30,8 @@ type AnswerPayload = {
   instanceId?: string;
   provider?: string;
   trace?: TraceEvent[];
+  caller?: CallerRole;
+  evaluation?: { groundedness: number; passed: boolean };
 };
 
 type Turn = {
@@ -37,9 +41,36 @@ type Turn = {
   payload?: AnswerPayload;
 };
 
+type MenuModel = { id: string; label: string; source?: "stub" | "gemini" | "ollama" | "cursor" };
+
+function noteForModel(model: MenuModel | undefined): string {
+  const source = model?.source ?? sourceFromId(model?.id);
+  if (source === "stub") return "Local mock. No model API call.";
+  if (source === "gemini") {
+    return "Uses your Gemini API key through LangChain. Free-tier prompts may be used to improve Google's products.";
+  }
+  if (source === "ollama") return "Runs on your local Ollama server. Tool calls use the same reasoning loop.";
+  return "Each reasoning step runs this Cursor model and uses your API key.";
+}
+
+function sourceFromId(id: string | undefined): NonNullable<MenuModel["source"]> {
+  if (!id || id === "stub") return "stub";
+  if (id.startsWith("gemini-")) return "gemini";
+  if (id.includes(":")) return "ollama";
+  return "cursor";
+}
+
 function countLabel(count: number, singular: string, plural: string): string {
   return `${count} ${count === 1 ? singular : plural}`;
 }
+
+const ROLE_NOTES: Record<CallerRole, string> = {
+  junior_hr_assistant:
+    "Office, tenure, headcount, and non-executive pay are available. Executive salary and expenses are refused.",
+  staff: "Office, tenure, and headcount are available. Compensation is refused.",
+  manager: "Staff pay is available. Manager and executive compensation is refused.",
+  executive: "Full compensation access, including executive pay.",
+};
 
 const SUGGESTIONS = [
   "Where does Bob Langley work? How long has he been employed?",
@@ -56,6 +87,27 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
   const [draft, setDraft] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState(false);
+  const [caller, setCaller] = useState<CallerRole>("junior_hr_assistant");
+  const [model, setModel] = useState("stub");
+  const [models, setModels] = useState<MenuModel[]>([{ id: "stub", label: "Stub", source: "stub" }]);
+  const [modelNote, setModelNote] = useState("Local mock. No model API call.");
+
+  useEffect(() => {
+    void fetch("/api/models")
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body: { models?: MenuModel[]; cursor?: string; gemini?: string; ollama?: string } | null) => {
+        if (!body?.models?.length) return;
+        setModels(body.models);
+        if (body.ollama === "unavailable") {
+          setModelNote("The Ollama server could not be reached. Stub is still available.");
+        } else if (body.cursor === "unavailable") {
+          setModelNote("Cursor models could not be loaded. Stub is still available.");
+        } else if (body.cursor === "missing_key" && body.gemini === "missing_key" && body.ollama !== "ready") {
+          setModelNote("Add GEMINI_API_KEY, CURSOR_API_KEY, or OLLAMA_BASE_URL in apps/agent/.env.local to list live models.");
+        }
+      })
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     if (health?.ok) return;
@@ -79,7 +131,11 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: { "content-type": "application/json" },
+        headers: {
+          "content-type": "application/json",
+          [CALLER_HEADER]: caller,
+          "x-model": model,
+        },
         body: JSON.stringify({ query }),
       });
       const payload = (await response.json()) as AnswerPayload;
@@ -117,10 +173,40 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
           <p className="kicker">PennyWise LLP</p>
           <h1>Ledger Logic</h1>
         </div>
-        <p className="caller">
-          Signed in as a Junior HR Assistant. Office, tenure, headcount, and non-executive pay are available.
-          Executive salary and expenses are refused. Each question is answered on its own.
-        </p>
+        <div className="role-picker">
+          <label htmlFor="model">Model</label>
+          <select
+            id="model"
+            value={model}
+            disabled={pending}
+            onChange={(event) => {
+              const next = event.target.value;
+              setModel(next);
+              setModelNote(noteForModel(models.find((item) => item.id === next)));
+            }}
+          >
+            {models.map((item) => (
+              <option key={item.id} value={item.id}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+          <p>{modelNote}</p>
+          <label htmlFor="caller-role">Role</label>
+          <select
+            id="caller-role"
+            value={caller}
+            disabled={pending}
+            onChange={(event) => setCaller(event.target.value as CallerRole)}
+          >
+            {CALLER_ROLES.map((role) => (
+              <option key={role.value} value={role.value}>
+                {role.label}
+              </option>
+            ))}
+          </select>
+          <p>{ROLE_NOTES[caller]} Each question is answered on its own.</p>
+        </div>
       </header>
       {!health ? <p className="banner">The agent service is not connected yet.</p> : null}
       <div className="shell">
@@ -128,7 +214,7 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
           <h2>Ask the ledger</h2>
           <p>
             {health
-              ? `Connected to ${health.instanceId}. Model: ${health.provider}. Tenure is measured as of ${health.asOf}.`
+              ? `Connected to ${health.instanceId}. Tenure is measured as of ${health.asOf}.`
               : "Start the agent service, then ask again."}
           </p>
           <div className="suggestions">
@@ -146,14 +232,23 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
             ) : null}
             {turns.map((turn) => (
               <article key={turn.id} className={`bubble ${turn.role} ${turn.payload?.status ?? ""}`}>
-                {turn.text}
+                {turn.role === "assistant" && turn.payload?.status !== "error" ? (
+                  <AnswerText text={turn.text} />
+                ) : (
+                  turn.text
+                )}
                 {turn.payload && turn.payload.status !== "error" ? (
                   <div className="meta">
-                    Served by {turn.payload.instanceId ?? "the agent"} in {turn.payload.durationMs ?? 0} ms
+                    Served by {turn.payload.instanceId ?? "the agent"} as {turn.payload.caller ?? caller} with{" "}
+                    {turn.payload.provider ?? model} in{" "}
+                    {turn.payload.durationMs ?? 0} ms
                     {" · "}
                     {countLabel(turn.payload.steps ?? 0, "reasoning step", "reasoning steps")}
                     {" · "}
                     {countLabel(turn.payload.llmAttempts ?? 0, "model call", "model calls")}
+                    {turn.payload.evaluation
+                      ? ` · groundedness ${Math.round(turn.payload.evaluation.groundedness * 100)}%`
+                      : ""}
                   </div>
                 ) : null}
                 {turn.payload?.trace && turn.payload.trace.length > 0 ? (

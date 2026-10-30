@@ -1,4 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { messageFromCursorReason } from "../../apps/agent/src/llm/cursor";
 import { ask, boot, employee, money, readEmployees, type AnswerBody } from "./harness";
 import type { RunningServer } from "../../apps/agent/src/server";
 
@@ -23,7 +24,7 @@ describe("ledger answers", () => {
     expect(body.status).toBe("ok");
     expect(body.provider).toBe("stub");
     expect(body.steps).toBe(1);
-    expect(body.llmAttempts).toBe(3);
+    expect(body.llmAttempts).toBe(2);
     expect(body.forcedGenerate).toBe(false);
     expect(body.answer).toContain("Chicago");
     expect(body.answer).toContain("2019-03-15");
@@ -179,10 +180,76 @@ describe("ledger answers", () => {
 
     const caller = await fetch(new URL("/answer", server.url), {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query: "Where does Bob Langley work?", caller: "executive" }),
+      headers: { "content-type": "application/json", "x-caller-role": "intern" },
+      body: JSON.stringify({ query: "Where does Bob Langley work?" }),
     });
     expect(caller.status).toBe(400);
+  });
+
+  it("changes compensation answers when the caller role header changes", async () => {
+    const kane = employee(rows, "Horatio", "Kane");
+    const bob = employee(rows, "Bob", "Langley");
+    const terry = employee(rows, "Terry", "Jeffords");
+    expect(bob.access_level).toBe("staff");
+    expect(terry.access_level).toBe("manager");
+
+    const asExecutive = await ask(server.url, "What is Horatio Kane's salary?", "executive");
+    expect(asExecutive.body.status).toBe("ok");
+    expect(asExecutive.body.caller).toBe("executive");
+    expect(asExecutive.body.answer).toContain(money(kane.salary2025Cents));
+
+    const asStaff = await ask(server.url, "What is Terry Jeffords's salary?", "staff");
+    expect(asStaff.body.status).toBe("refused");
+    expect(asStaff.body.caller).toBe("staff");
+    expect(asStaff.body.answer).not.toMatch(/\d/);
+    expect(asStaff.body.answer).not.toContain(money(terry.salary2025Cents));
+
+    const staffLookup = await ask(server.url, "Where does Bob Langley work?", "staff");
+    expect(staffLookup.body.status).toBe("ok");
+    expect(staffLookup.body.answer).toContain("Chicago");
+
+    const staffPayroll = await ask(server.url, "What was the total payroll for 2024?", "staff");
+    expect(staffPayroll.body.status).toBe("refused");
+    expect(staffPayroll.body.answer).not.toMatch(/\d/);
+
+    const asManager = await ask(server.url, "What is Bob Langley's salary?", "manager");
+    expect(asManager.body.status).toBe("ok");
+    expect(asManager.body.answer).toContain(money(bob.salary2025Cents));
+
+    const managerBlocked = await ask(server.url, "What is Terry Jeffords's salary?", "manager");
+    expect(managerBlocked.body.status).toBe("refused");
+    expect(managerBlocked.body.answer).not.toContain(money(terry.salary2025Cents));
+  });
+
+  it("lists stub and rejects a model the key cannot run", async () => {
+    const menu = await fetch(new URL("/models", server.url));
+    expect(menu.status).toBe(200);
+    const body = (await menu.json()) as { models: Array<{ id: string }>; cursor: string; gemini: string; ollama: string };
+    expect(body.models.map((model) => model.id)).toContain("stub");
+    expect(body.models.map((model) => model.id)).not.toContain("gemini-3.8-flash");
+    expect(body.cursor).toBe("missing_key");
+    expect(body.gemini).toBe("missing_key");
+    expect(body.ollama).toBe("unset");
+
+    const gemini = await fetch(new URL("/answer", server.url), {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-model": "gemini-3.8-flash" },
+      body: JSON.stringify({ query: "Where does Bob Langley work?" }),
+    });
+    expect(gemini.status).toBe(400);
+
+    const rejected = await fetch(new URL("/answer", server.url), {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-model": "composer-2.5" },
+      body: JSON.stringify({ query: "Where does Bob Langley work?" }),
+    });
+    expect(rejected.status).toBe(400);
+
+    const parsed = messageFromCursorReason(
+      '```json\n{"tool_calls":[{"name":"query_ledger","arguments":{"metrics":[{"fn":"count"}]}}]}\n```',
+    );
+    expect(parsed.tool_calls?.[0]?.name).toBe("query_ledger");
+    expect(parsed.tool_calls?.[0]?.args).toEqual({ metrics: [{ fn: "count" }] });
   });
 
   it("reports health for the process that is serving", async () => {

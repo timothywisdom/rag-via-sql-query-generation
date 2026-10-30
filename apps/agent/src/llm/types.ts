@@ -10,7 +10,7 @@ export type LlmRequest = {
 };
 
 export interface LlmProvider {
-  readonly name: "stub" | "openai";
+  readonly name: string;
   invoke(request: LlmRequest): Promise<AIMessage>;
 }
 

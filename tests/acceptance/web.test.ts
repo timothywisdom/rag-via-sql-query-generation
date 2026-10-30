@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { POST } from "../../apps/web/src/app/api/chat/route";
+import { GET as listModels } from "../../apps/web/src/app/api/models/route";
 import { GET } from "../../apps/web/src/app/api/health/route";
 import { ask, boot } from "./harness";
 import type { RunningServer } from "../../apps/agent/src/server";
@@ -50,6 +51,36 @@ describe("web route calls the agent service", () => {
     expect(response.status).toBe(400);
   });
 
+  it("uses the caller role header when it forwards the question", async () => {
+    const direct = await ask(server.url, "What is Horatio Kane's salary?", "executive");
+    const response = await POST(jsonRequest("What is Horatio Kane's salary?", "executive"));
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { answer: string; status: string; caller: string };
+    expect(body.status).toBe("ok");
+    expect(body.caller).toBe("executive");
+    expect(body.answer).toBe(direct.body.answer);
+    expect(body.answer).toMatch(/\$/);
+
+    const rejected = await POST(jsonRequest("Where does Bob Langley work?", "intern"));
+    expect(rejected.status).toBe(400);
+  });
+
+  it("forwards the selected model and keeps stub when the header is omitted", async () => {
+    const menu = await listModels();
+    expect(menu.status).toBe(200);
+    const listed = (await menu.json()) as { models: Array<{ id: string }> };
+    expect(listed.models.map((model) => model.id)).toContain("stub");
+
+    const response = await POST(jsonRequest("Where does Bob Langley work?", undefined, "stub"));
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as { provider: string; answer: string };
+    expect(body.provider).toBe("stub");
+    expect(body.answer).toContain("Chicago");
+
+    const rejected = await POST(jsonRequest("Where does Bob Langley work?", undefined, "composer-2.5"));
+    expect(rejected.status).toBe(400);
+  });
+
   it("reports that the agent is unavailable", async () => {
     const doomed = await boot({ instanceId: "closed" });
     const closedUrl = doomed.url;
@@ -63,10 +94,14 @@ describe("web route calls the agent service", () => {
   });
 });
 
-function jsonRequest(query: string): Request {
+function jsonRequest(query: string, role?: string, model?: string): Request {
   return new Request("http://ledger.local/api/chat", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: {
+      "content-type": "application/json",
+      ...(role ? { "x-caller-role": role } : {}),
+      ...(model ? { "x-model": model } : {}),
+    },
     body: JSON.stringify({ query }),
   });
 }

@@ -1,10 +1,17 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from "node:http";
 import type { AddressInfo } from "node:net";
-import { runLedgerAgent, type AgentResponse } from "./agent/loop";
+import { runLedgerAgent } from "./agent/loop";
+import { CALLER_HEADER, isCallerRole } from "./ledger/callers";
 import { configFromEnv, type AppConfig } from "./config";
 import { loadLedger, type LedgerDatabase } from "./ledger/database";
-import { createLlmService } from "./llm";
+import { createLlmService, llmForModel, ModelSelectionError } from "./llm";
+import { listModels, MODEL_HEADER, STUB_MODEL_ID } from "./llm/cursor";
 import { LlmService } from "./llm/service";
+import { trace, withRequestId } from "./log";
 
 export type RunningServer = {
   url: string;
@@ -47,7 +54,19 @@ async function handle(
   llm: LlmService,
   config: AppConfig,
 ): Promise<void> {
-  const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
+  const url = new URL(
+    req.url ?? "/",
+    `http://${req.headers.host ?? "localhost"}`,
+  );
+  if (req.method === "GET" && url.pathname === "/models") {
+    const menu = await listModels({
+      cursorApiKey: config.cursorApiKey,
+      geminiApiKey: config.geminiApiKey,
+      ollamaBaseUrl: config.ollamaBaseUrl,
+    });
+    send(res, 200, menu);
+    return;
+  }
   if (req.method === "GET" && url.pathname === "/health") {
     send(res, 200, {
       ok: true,
@@ -75,12 +94,18 @@ async function answer(
   const requestId = crypto.randomUUID();
   let body: { query?: unknown; caller?: unknown };
   try {
-    body = JSON.parse(await readBody(req)) as { query?: unknown; caller?: unknown };
+    body = JSON.parse(await readBody(req)) as {
+      query?: unknown;
+      caller?: unknown;
+    };
   } catch (error) {
-    const tooLarge = error instanceof Error && error.message === "body too large";
+    const tooLarge =
+      error instanceof Error && error.message === "body too large";
     send(res, tooLarge ? 413 : 400, {
       status: "error",
-      error: tooLarge ? "Request body is too large." : "Request body must be JSON.",
+      error: tooLarge
+        ? "Request body is too large."
+        : "Request body must be JSON.",
     });
     return;
   }
@@ -90,47 +115,69 @@ async function answer(
     send(res, 400, { status: "error", error: "Query is required." });
     return;
   }
-  if (body.caller !== undefined && body.caller !== "junior_hr_assistant") {
-    send(res, 400, { status: "error", error: "Only the junior_hr_assistant caller is supported." });
+  const headerCaller = headerValue(req, CALLER_HEADER);
+  const bodyCaller = typeof body.caller === "string" ? body.caller : undefined;
+  const caller = headerCaller ?? bodyCaller ?? "junior_hr_assistant";
+  if (!isCallerRole(caller)) {
+    send(res, 400, { status: "error", error: "Unknown caller role." });
+    return;
+  }
+  const modelId = headerValue(req, MODEL_HEADER) ?? STUB_MODEL_ID;
+  let selected: LlmService;
+  try {
+    selected = await llmForModel(config, modelId, llm);
+  } catch (error) {
+    const message =
+      error instanceof ModelSelectionError ? error.message : "Unknown model.";
+    send(res, 400, { status: "error", error: message });
     return;
   }
 
   try {
-    const result = await runLedgerAgent(db, llm, config, query);
-    const payload = {
-      ...result,
-      requestId,
-      instanceId: config.instanceId,
-      durationMs: Date.now() - started,
-    };
-    logAnswer(payload, config);
-    send(res, 200, payload);
-  } catch (error) {
-    console.error(
-      JSON.stringify({
-        event: "request_failed",
+    const payload = await withRequestId(requestId, async () => {
+      trace("request", { model: modelId, caller, query: query.slice(0, 240) });
+      const result = await runLedgerAgent(db, selected, config, query, caller);
+      return {
+        ...result,
         requestId,
-        message: error instanceof Error ? error.message : "error",
-      }),
-    );
-    send(res, 500, { status: "error", error: "The agent failed before it could answer.", requestId });
-  }
-}
-
-function logAnswer(payload: AgentResponse & { requestId: string; instanceId: string; durationMs: number }, config: AppConfig): void {
-  console.log(
-    JSON.stringify({
-      event: "answer",
-      requestId: payload.requestId,
-      instanceId: payload.instanceId,
-      provider: config.llmProvider,
+        instanceId: config.instanceId,
+        durationMs: Date.now() - started,
+      };
+    });
+    trace("answer", {
+      requestId,
+      provider: payload.provider,
       status: payload.status,
       steps: payload.steps,
       llmAttempts: payload.llmAttempts,
       durationMs: payload.durationMs,
-      tools: payload.trace.map((event) => ({ tool: event.tool, status: event.output.status })),
-    }),
-  );
+      tools: payload.trace.map((event) => ({
+        tool: event.tool,
+        status: event.output.status,
+      })),
+      ...(payload.evaluation
+        ? { groundedness: payload.evaluation.groundedness, grounded: payload.evaluation.passed }
+        : {}),
+    });
+    send(res, 200, payload);
+  } catch (error) {
+    trace("request_failed", {
+      requestId,
+      message: error instanceof Error ? error.message : "error",
+    });
+    send(res, 500, {
+      status: "error",
+      error: "The agent failed before it could answer.",
+      requestId,
+    });
+  }
+}
+
+function headerValue(req: IncomingMessage, name: string): string | undefined {
+  const value = req.headers[name];
+  const first = Array.isArray(value) ? value[0] : value;
+  const trimmed = first?.trim();
+  return trimmed ? trimmed : undefined;
 }
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -139,7 +186,7 @@ function readBody(req: IncomingMessage): Promise<string> {
     let size = 0;
     req.on("data", (chunk: Buffer) => {
       size += chunk.length;
-      if (size > 20_000) {
+      if (size > 20000) {
         reject(new Error("body too large"));
         req.destroy();
         return;

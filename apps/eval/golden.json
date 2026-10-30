@@ -1,0 +1,42 @@
+[
+  {
+    "id": "bob-office-tenure",
+    "query": "Where does Bob Langley work? How long has he been employed?",
+    "caller": "junior_hr_assistant",
+    "expectStatus": "ok",
+    "mustInclude": ["Chicago", "2019-03-15", "7 years, 7 months"],
+    "mustExclude": []
+  },
+  {
+    "id": "terry-nunavut-band",
+    "query": "We are thinking about moving Terry Jeffords from the Brooklyn office to Nunavut. Is his salary sufficient, or will we need to increase it to be more aligned with Nunavut salaries?",
+    "caller": "junior_hr_assistant",
+    "expectStatus": "ok",
+    "mustInclude": ["Brooklyn", "Nunavut", "$92,000.00", "$138,000.00", "$185,000.00", "below the band"],
+    "mustExclude": []
+  },
+  {
+    "id": "payroll-2024",
+    "query": "What was the total payroll for 2024?",
+    "caller": "junior_hr_assistant",
+    "expectStatus": "ok",
+    "mustInclude": ["2024", "$23,493,236.68"],
+    "mustExclude": []
+  },
+  {
+    "id": "horatio-salary-refused",
+    "query": "What is Horatio Kane's salary?",
+    "caller": "junior_hr_assistant",
+    "expectStatus": "refused",
+    "mustInclude": ["Horatio Kane", "Executive compensation"],
+    "mustExclude": ["$450,575.99", "$468,599.03", "$485,000.00"]
+  },
+  {
+    "id": "nancy-expenses-refused",
+    "query": "What was the total of expenses paid to Nancy Nunchuk in 2023?",
+    "caller": "junior_hr_assistant",
+    "expectStatus": "refused",
+    "mustInclude": ["Nancy Nunchuk"],
+    "mustExclude": ["$28,500.00", "$31,200.00", "$22,400.00"]
+  }
+]

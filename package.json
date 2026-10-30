@@ -5,8 +5,10 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently -n agent,web -c cyan,magenta \"npm run dev -w @ledger/agent\" \"npm run dev -w @ledger/web\"",
+    "dev": "ONLINE_EVAL=0 concurrently -n agent,web -c cyan,magenta \"npm run dev -w @ledger/agent\" \"npm run dev -w @ledger/web\"",
+    "dev:eval": "ONLINE_EVAL=1 concurrently -n agent,web -c cyan,magenta \"npm run dev -w @ledger/agent\" \"npm run dev -w @ledger/web\"",
     "test": "vitest run",
+    "eval": "EVAL_MODEL=qwen-3.8-27b:256k npm run eval -w @ledger/eval",
     "typecheck": "tsc -p apps/agent --noEmit"
   },
   "devDependencies": {
