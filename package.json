@@ -1,5 +1,5 @@
 {
-  "name": "wagepoint-ledger-logic",
+  "name": "ledger-logic",
   "private": true,
   "workspaces": [
     "apps/*"
