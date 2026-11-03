@@ -52,7 +52,11 @@ const PHASE_LABEL: Record<AnswerPhase, string> = {
   evaluate: "Checking the answer…",
 };
 
-type MenuModel = { id: string; label: string; source?: "stub" | "gemini" | "ollama" | "cursor" };
+type MenuModel = {
+  id: string;
+  label: string;
+  source?: "stub" | "gemini" | "ollama" | "cursor";
+};
 
 function noteForModel(model: MenuModel | undefined): string {
   const source = model?.source ?? sourceFromId(model?.id);
@@ -60,11 +64,14 @@ function noteForModel(model: MenuModel | undefined): string {
   if (source === "gemini") {
     return "Uses your Gemini API key through LangChain. Free-tier prompts may be used to improve Google's products.";
   }
-  if (source === "ollama") return "Runs on your local Ollama server. Tool calls use the same reasoning loop.";
+  if (source === "ollama")
+    return "Runs on your local Ollama server. Tool calls use the same reasoning loop.";
   return "Each reasoning step runs this Cursor model and uses your API key.";
 }
 
-function sourceFromId(id: string | undefined): NonNullable<MenuModel["source"]> {
+function sourceFromId(
+  id: string | undefined,
+): NonNullable<MenuModel["source"]> {
   if (!id || id === "stub") return "stub";
   if (id.startsWith("gemini-")) return "gemini";
   if (id.includes(":")) return "ollama";
@@ -72,7 +79,12 @@ function sourceFromId(id: string | undefined): NonNullable<MenuModel["source"]> 
 }
 
 function isPhase(value: unknown): value is AnswerPhase {
-  return value === "reason" || value === "tools" || value === "generate" || value === "evaluate";
+  return (
+    value === "reason" ||
+    value === "tools" ||
+    value === "generate" ||
+    value === "evaluate"
+  );
 }
 
 function countLabel(count: number, singular: string, plural: string): string {
@@ -82,8 +94,10 @@ function countLabel(count: number, singular: string, plural: string): string {
 const ROLE_NOTES: Record<CallerRole, string> = {
   junior_hr_assistant:
     "Office, tenure, headcount, and non-executive pay are available. Executive salary and expenses are refused.",
-  staff: "Office, tenure, and headcount are available. Compensation is refused.",
-  manager: "Staff pay is available. Manager and executive compensation is refused.",
+  staff:
+    "Office, tenure, and headcount are available. Compensation is refused.",
+  manager:
+    "Staff pay is available. Manager and executive compensation is refused.",
   executive: "Full compensation access, including executive pay.",
 };
 
@@ -97,30 +111,55 @@ const SUGGESTIONS = [
   "What is the average 2025 salary in the Technology department?",
 ];
 
-export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null }) {
+export function Chat({
+  initialHealth,
+}: {
+  initialHealth: ServiceHealth | null;
+}) {
   const [health, setHealth] = useState(initialHealth);
   const [draft, setDraft] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const [pending, setPending] = useState(false);
   const [caller, setCaller] = useState<CallerRole>("junior_hr_assistant");
   const [model, setModel] = useState("stub");
-  const [models, setModels] = useState<MenuModel[]>([{ id: "stub", label: "Stub", source: "stub" }]);
+  const [models, setModels] = useState<MenuModel[]>([
+    { id: "stub", label: "Stub", source: "stub" },
+  ]);
   const [modelNote, setModelNote] = useState("Local mock. No model API call.");
 
   useEffect(() => {
     void fetch("/api/models")
       .then((response) => (response.ok ? response.json() : null))
-      .then((body: { models?: MenuModel[]; cursor?: string; gemini?: string; ollama?: string } | null) => {
-        if (!body?.models?.length) return;
-        setModels(body.models);
-        if (body.ollama === "unavailable") {
-          setModelNote("The Ollama server could not be reached. Stub is still available.");
-        } else if (body.cursor === "unavailable") {
-          setModelNote("Cursor models could not be loaded. Stub is still available.");
-        } else if (body.cursor === "missing_key" && body.gemini === "missing_key" && body.ollama !== "ready") {
-          setModelNote("Add GEMINI_API_KEY, CURSOR_API_KEY, or OLLAMA_BASE_URL in apps/agent/.env.local to list live models.");
-        }
-      })
+      .then(
+        (
+          body: {
+            models?: MenuModel[];
+            cursor?: string;
+            gemini?: string;
+            ollama?: string;
+          } | null,
+        ) => {
+          if (!body?.models?.length) return;
+          setModels(body.models);
+          if (body.ollama === "unavailable") {
+            setModelNote(
+              "The Ollama server could not be reached. Stub is still available.",
+            );
+          } else if (body.cursor === "unavailable") {
+            setModelNote(
+              "Cursor models could not be loaded. Stub is still available.",
+            );
+          } else if (
+            body.cursor === "missing_key" &&
+            body.gemini === "missing_key" &&
+            body.ollama !== "ready"
+          ) {
+            setModelNote(
+              "Add GEMINI_API_KEY, CURSOR_API_KEY, or OLLAMA_BASE_URL in apps/agent/.env.local to list live models.",
+            );
+          }
+        },
+      )
       .catch(() => undefined);
   }, []);
 
@@ -142,7 +181,10 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
     if (!query || pending) return;
     setDraft("");
     setPending(true);
-    setTurns((current) => [...current, { id: crypto.randomUUID(), role: "user", text: query }]);
+    setTurns((current) => [
+      ...current,
+      { id: crypto.randomUUID(), role: "user", text: query },
+    ]);
     const assistantId = crypto.randomUUID();
     try {
       const response = await fetch("/api/chat", {
@@ -159,25 +201,37 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
       if (!type.includes("text/event-stream")) {
         const payload = (await response.json()) as AnswerPayload;
         const text = response.ok
-          ? payload.answer ?? payload.error ?? "The agent did not return an answer."
-          : payload.error ?? "The request failed.";
+          ? (payload.answer ??
+            payload.error ??
+            "The agent did not return an answer.")
+          : (payload.error ?? "The request failed.");
         setTurns((current) => [
           ...current,
           {
             id: assistantId,
             role: "assistant",
             text,
-            payload: response.ok ? payload : { ...payload, status: "error", answer: null, error: text },
+            payload: response.ok
+              ? payload
+              : { ...payload, status: "error", answer: null, error: text },
           },
         ]);
         return;
       }
-      setTurns((current) => [...current, { id: assistantId, role: "assistant", text: "", phase: "reason" }]);
+      setTurns((current) => [
+        ...current,
+        { id: assistantId, role: "assistant", text: "", phase: "reason" },
+      ]);
       let finished = false;
       await readSse(response, (message) => {
         const data = message.data;
         if (!data || typeof data !== "object") return;
-        const record = data as { text?: unknown; phase?: unknown; payload?: AnswerPayload; error?: unknown };
+        const record = data as {
+          text?: unknown;
+          phase?: unknown;
+          payload?: AnswerPayload;
+          error?: unknown;
+        };
         setTurns((current) =>
           current.map((turn) => {
             if (turn.id !== assistantId) return turn;
@@ -185,19 +239,29 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
               return { ...turn, text: turn.text + record.text };
             }
             if (message.event === "replace") return { ...turn, text: "" };
-            if (message.event === "status" && isPhase(record.phase)) return { ...turn, phase: record.phase };
+            if (message.event === "status" && isPhase(record.phase))
+              return { ...turn, phase: record.phase };
             if (message.event === "error") {
               finished = true;
-              const error = typeof record.error === "string" ? record.error : "The agent failed before it could answer.";
-              return { ...turn, text: error, phase: undefined, payload: { status: "error", answer: null, error } };
+              const error =
+                typeof record.error === "string"
+                  ? record.error
+                  : "The agent failed before it could answer.";
+              return {
+                ...turn,
+                text: error,
+                phase: undefined,
+                payload: { status: "error", answer: null, error },
+              };
             }
             if (message.event === "done" && record.payload) {
               finished = true;
               const payload = record.payload;
               const text =
                 payload.status === "error"
-                  ? payload.error ?? "The agent failed before it could answer."
-                  : payload.answer ?? turn.text;
+                  ? (payload.error ??
+                    "The agent failed before it could answer.")
+                  : (payload.answer ?? turn.text);
               return { ...turn, text, payload, phase: undefined };
             }
             return turn;
@@ -232,7 +296,9 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
           payload: { status: "error" as const, answer: null, error },
         };
         if (current.some((turn) => turn.id === assistantId)) {
-          return current.map((turn) => (turn.id === assistantId ? failed : turn));
+          return current.map((turn) =>
+            turn.id === assistantId ? failed : turn,
+          );
         }
         return [...current, failed];
       });
@@ -246,7 +312,7 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
       <header className="masthead">
         <div>
           <p className="kicker">PennyWise LLP</p>
-          <h1>Ledger Logic</h1>
+          <h1>Payroll Assistant</h1>
         </div>
         <div className="role-picker">
           <label htmlFor="model">Model</label>
@@ -257,7 +323,9 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
             onChange={(event) => {
               const next = event.target.value;
               setModel(next);
-              setModelNote(noteForModel(models.find((item) => item.id === next)));
+              setModelNote(
+                noteForModel(models.find((item) => item.id === next)),
+              );
             }}
           >
             {models.map((item) => (
@@ -283,7 +351,9 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
           <p>{ROLE_NOTES[caller]} Each question is answered on its own.</p>
         </div>
       </header>
-      {!health ? <p className="banner">The agent service is not connected yet.</p> : null}
+      {!health ? (
+        <p className="banner">The agent service is not connected yet.</p>
+      ) : null}
       <div className="shell">
         <aside className="rail">
           <h2>Ask the ledger</h2>
@@ -294,7 +364,12 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
           </p>
           <div className="suggestions">
             {SUGGESTIONS.map((question) => (
-              <button key={question} type="button" disabled={pending} onClick={() => void submit(question)}>
+              <button
+                key={question}
+                type="button"
+                disabled={pending}
+                onClick={() => void submit(question)}
+              >
                 {question}
               </button>
             ))}
@@ -303,27 +378,45 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
         <section className="conversation" aria-busy={pending}>
           <div className="transcript" aria-live="polite">
             {turns.length === 0 ? (
-              <p className="status">Answers come from the agent service, which can be run as more than one copy.</p>
+              <p className="status">
+                Answers come from the agent service, which can be run as more
+                than one copy.
+              </p>
             ) : null}
             {turns.map((turn) => (
-              <article key={turn.id} className={`bubble ${turn.role} ${turn.payload?.status ?? ""}`}>
-                {turn.role === "assistant" && turn.text && turn.payload?.status !== "error" ? (
+              <article
+                key={turn.id}
+                className={`bubble ${turn.role} ${turn.payload?.status ?? ""}`}
+              >
+                {turn.role === "assistant" &&
+                turn.text &&
+                turn.payload?.status !== "error" ? (
                   <AnswerText text={turn.text} />
                 ) : (
                   turn.text
                 )}
-                {turn.phase && (turn.text.length === 0 || turn.phase === "evaluate") ? (
+                {turn.phase &&
+                (turn.text.length === 0 || turn.phase === "evaluate") ? (
                   <p className="status">{PHASE_LABEL[turn.phase]}</p>
                 ) : null}
                 {turn.payload && turn.payload.status !== "error" ? (
                   <div className="meta">
-                    Served by {turn.payload.instanceId ?? "the agent"} as {turn.payload.caller ?? caller} with{" "}
+                    Served by {turn.payload.instanceId ?? "the agent"} as{" "}
+                    {turn.payload.caller ?? caller} with{" "}
                     {turn.payload.provider ?? model} in{" "}
                     {turn.payload.durationMs ?? 0} ms
                     {" · "}
-                    {countLabel(turn.payload.steps ?? 0, "reasoning step", "reasoning steps")}
+                    {countLabel(
+                      turn.payload.steps ?? 0,
+                      "reasoning step",
+                      "reasoning steps",
+                    )}
                     {" · "}
-                    {countLabel(turn.payload.llmAttempts ?? 0, "model call", "model calls")}
+                    {countLabel(
+                      turn.payload.llmAttempts ?? 0,
+                      "model call",
+                      "model calls",
+                    )}
                     {turn.payload.evaluation
                       ? ` · groundedness ${Math.round(turn.payload.evaluation.groundedness * 100)}%`
                       : ""}
@@ -351,7 +444,11 @@ export function Chat({ initialHealth }: { initialHealth: ServiceHealth | null })
               placeholder="Ask about an employee, an office, a total, or a salary band."
               onChange={(event) => setDraft(event.target.value)}
             />
-            <button className="send" type="submit" disabled={pending || draft.trim().length === 0}>
+            <button
+              className="send"
+              type="submit"
+              disabled={pending || draft.trim().length === 0}
+            >
               {pending ? "Asking…" : "Ask"}
             </button>
           </form>

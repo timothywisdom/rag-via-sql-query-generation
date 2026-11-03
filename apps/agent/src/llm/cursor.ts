@@ -118,7 +118,7 @@ export class CursorProvider implements LlmProvider {
         model: { id: this.model.id, params: this.model.params },
         tools: [],
         systemPrompt:
-          "You are the language model inside Ledger Logic. Follow the user message exactly. Do not use tools, browse, or edit files.",
+          "You are the language model inside a Payroll Assistant. Follow the user message exactly. Do not use tools, browse, or edit files.",
         local: {
           cwd: cursorCwd(),
           settingSources: [],

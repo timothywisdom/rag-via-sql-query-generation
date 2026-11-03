@@ -1,6 +1,6 @@
-# Ledger Logic
+# RAG via SQL Query Generation Demo
 
-Payroll assistant for a Junior HR Assistant. The browser talks to a Next.js app. That app calls a separate agent service. The agent is a LangGraph that hops between reason, tools, and generate over the employee and salary-band tables.
+This is a demo payroll assistant for a Junior HR Assistant. The browser talks to a Next.js app. That app calls a separate agent service. The agent is a LangGraph that hops between reason, tools, and generate over the employee and salary-band tables.
 
 ## Run
 
